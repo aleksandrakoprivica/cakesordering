@@ -1,21 +1,12 @@
-import { useLocalSearchParams } from 'expo-router'
-import { useEffect, useState } from 'react'
-import { View, Text, ActivityIndicator, Pressable } from 'react-native'
+import { useLocalSearchParams, Stack, router } from 'expo-router'
+import { useEffect, useMemo, useState } from 'react'
+import { View, Text, ActivityIndicator, Pressable, ScrollView } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { supabase } from '@/src/lib/supabase'
+import { useCart } from '@/src/lib/cart'
 
-type CakeSize = {
-    id: string
-    name: string
-    code: string
-    sort_order: number
-}
-
-type CakeVariant = {
-    id: string
-    price_rsd: number
-    cake_sizes: CakeSize
-}
-
+type CakeSize = { id: string; name: string; code: string; sort_order: number }
+type CakeVariant = { id: string; price_rsd: number; cake_sizes: CakeSize }
 type CakeDetail = {
     id: string
     name: string
@@ -33,27 +24,55 @@ function formatRSD(rsd: number) {
     })
 }
 
+function getRadiusFromCode(code: string): string {
+    const radiusMap: Record<string, string> = {
+        'S': '15 cm',
+        'M': '18 cm',
+        'L': '22 cm',
+        's': '15 cm',
+        'm': '18 cm',
+        'l': '22 cm',
+    }
+    return radiusMap[code] || code
+}
+
 export default function CakeDetailScreen() {
-    const { id } = useLocalSearchParams<{ id: string }>()
+    const params = useLocalSearchParams<{ id?: string | string[] }>()
+    const cakeId = useMemo(() => {
+        const raw = params.id
+        return Array.isArray(raw) ? raw[0] : raw
+    }, [params.id])
+
+    const addItem = useCart((s) => s.addItem)
+
     const [cake, setCake] = useState<CakeDetail | null>(null)
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
+    const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
     useEffect(() => {
-        ;(async () => {
-            const { data, error } = await supabase
-                .from('cakes')
-                .select(`
-    id,name,ingredients,base_price_rsd,is_bento,
-    cake_variants (
-      id,price_rsd,
-      cake_sizes ( id,name,code,sort_order )
-    )
-  `)
-                .eq('id', id)
-                .single()
+        if (!cakeId) return
 
-            if (!error && data) {
+        setLoading(true)
+        setErrorMsg(null)
+
+        ;(async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('cakes')
+                    .select(`
+            id,name,ingredients,base_price_rsd,is_bento,
+            cake_variants (
+              id,price_rsd,
+              cake_sizes ( id,name,code,sort_order )
+            )
+          `)
+                    .eq('id', cakeId)
+                    .single()
+
+                if (error) throw error
+                if (!data) throw new Error('No data returned')
+
                 const normalized: CakeDetail = {
                     id: data.id,
                     name: data.name,
@@ -64,7 +83,6 @@ export default function CakeDetailScreen() {
                         .map((v: any) => ({
                             id: v.id,
                             price_rsd: v.price_rsd,
-                            // if cake_sizes comes back as array, take first; otherwise use object
                             cake_sizes: Array.isArray(v.cake_sizes) ? v.cake_sizes[0] : v.cake_sizes,
                         }))
                         .filter((v: any) => v.cake_sizes)
@@ -72,93 +90,153 @@ export default function CakeDetailScreen() {
                 }
 
                 setCake(normalized)
+            } catch (e: any) {
+                setErrorMsg(e?.message ?? String(e))
+            } finally {
+                setLoading(false)
             }
-
         })()
-    }, [id])
-
-    if (loading) {
-        return (
-            <View className="flex-1 items-center justify-center">
-                <ActivityIndicator />
-            </View>
-        )
-    }
-
-    if (!cake) {
-        return (
-            <View className="flex-1 items-center justify-center">
-                <Text>Not found</Text>
-            </View>
-        )
-    }
+    }, [cakeId])
 
     return (
-        <View className="flex-1 bg-white p-4">
-            <Text className="text-3xl font-bold">{cake.name}</Text>
-
-            {!!cake.ingredients && (
-                <Text className="mt-2 text-gray-600">
-                    <Text className="font-semibold">Ingredients:</Text> {cake.ingredients}
-                </Text>
-            )}
-
-            {/* BENTO */}
-            {cake.is_bento ? (
-                <View className="mt-6">
-                    <Text className="text-xl font-semibold">
-                        {formatRSD(cake.base_price_rsd!)}
-                    </Text>
-
-                    <Pressable className="mt-4 rounded-2xl bg-black py-4">
-                        <Text className="text-center text-white font-semibold">
-                            Add to cart
-                        </Text>
+        <SafeAreaView className="flex-1 bg-gray-50">
+            <Stack.Screen options={{ title: 'Cake Details' }} />
+            
+            {!cakeId ? (
+                <View className="flex-1 items-center justify-center gap-4 p-6">
+                    <Text className="text-red-600 font-bold text-lg">Missing cake id</Text>
+                    <Pressable 
+                        onPress={() => router.back()} 
+                        className="rounded-xl bg-gray-100 px-6 py-3 active:opacity-70"
+                    >
+                        <Text className="font-semibold text-gray-700">Go back</Text>
                     </Pressable>
+                </View>
+            ) : loading ? (
+                <View className="flex-1 items-center justify-center">
+                    <ActivityIndicator size="large" color="#000" />
+                </View>
+            ) : errorMsg ? (
+                <View className="flex-1 items-center justify-center gap-4 p-6">
+                    <Text className="text-red-600 font-bold text-lg text-center">❌ {errorMsg}</Text>
+                    <Text className="text-gray-600 text-center text-sm px-4">
+                        If it says "JSON object requested, multiple (or no) rows returned", the id didn't match any cake.
+                    </Text>
+                    <Pressable 
+                        onPress={() => router.back()} 
+                        className="rounded-xl bg-gray-100 px-6 py-3 active:opacity-70"
+                    >
+                        <Text className="font-semibold text-gray-700">Go back</Text>
+                    </Pressable>
+                </View>
+            ) : !cake ? (
+                <View className="flex-1 items-center justify-center">
+                    <Text className="text-gray-600 text-lg">Cake not found</Text>
                 </View>
             ) : (
-                /* CLASSIC CAKE */
-                <View className="mt-6">
-                    <Text className="text-lg font-semibold">Choose size</Text>
+                <ScrollView 
+                    className="flex-1" 
+                    contentContainerClassName="p-5"
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View className="bg-white rounded-3xl p-6 shadow-md mb-4">
+                        <Text className="text-3xl font-extrabold text-gray-900 mb-3">{cake.name}</Text>
+                        
+                        {cake.is_bento && (
+                            <View className="self-start bg-pink-100 px-3 py-1 rounded-full mb-3">
+                                <Text className="text-pink-700 font-semibold text-xs">Bento Cake</Text>
+                            </View>
+                        )}
 
-                    <View className="mt-3 flex-row gap-3">
-                        {cake.cake_variants.map((v) => {
-                            const selected = selectedVariantId === v.id
-                            return (
-                                <Pressable
-                                    key={v.id}
-                                    onPress={() => setSelectedVariantId(v.id)}
-                                    className={`rounded-xl border px-4 py-2 ${
-                                        selected ? 'border-black bg-black' : 'border-gray-300'
-                                    }`}
-                                >
-                                    <Text className={selected ? 'text-white' : 'text-black'}>
-                                        {v.cake_sizes.code}
-                                    </Text>
-                                    <Text
-                                        className={`text-sm ${
-                                            selected ? 'text-white' : 'text-gray-600'
-                                        }`}
-                                    >
-                                        {formatRSD(v.price_rsd)}
-                                    </Text>
-                                </Pressable>
-                            )
-                        })}
+                        {!!cake.ingredients && (
+                            <View className="mt-4 p-4 bg-gray-50 rounded-2xl">
+                                <Text className="font-bold text-gray-900 mb-2">Ingredients</Text>
+                                <Text className="text-gray-700 leading-6">{cake.ingredients}</Text>
+                            </View>
+                        )}
                     </View>
 
-                    <Pressable
-                        disabled={!selectedVariantId}
-                        className={`mt-6 rounded-2xl py-4 ${
-                            selectedVariantId ? 'bg-black' : 'bg-gray-300'
-                        }`}
-                    >
-                        <Text className="text-center text-white font-semibold">
-                            Add to cart
-                        </Text>
-                    </Pressable>
-                </View>
+                    {cake.is_bento ? (
+                        <View className="bg-white rounded-3xl p-6 shadow-md">
+                            <View className="flex-row items-baseline justify-between mb-6">
+                                <Text className="text-gray-600 font-medium text-lg">Price</Text>
+                                <Text className="text-3xl font-extrabold text-gray-900">
+                                    {formatRSD(cake.base_price_rsd ?? 0)}
+                                </Text>
+                            </View>
+
+                            <Pressable
+                                onPress={() => {
+                                    addItem({
+                                        key: `bento:${cake.id}`,
+                                        cakeId: cake.id,
+                                        cakeName: cake.name,
+                                        variantId: null,
+                                        sizeLabel: null,
+                                        unitPriceRsd: cake.base_price_rsd ?? 0,
+                                    })
+                                    router.push('/(tabs)/cart')
+                                }}
+                                className="rounded-2xl bg-black py-4 active:opacity-90 active:scale-[0.98]"
+                            >
+                                <Text className="text-center text-white font-bold text-lg">Add to Cart</Text>
+                            </Pressable>
+                        </View>
+                    ) : (
+                        <View className="bg-white rounded-3xl p-6 shadow-md">
+                            <Text className="text-xl font-bold text-gray-900 mb-4">Choose Size</Text>
+
+                            <View className="flex-row flex-wrap gap-3 mb-6">
+                                {cake.cake_variants.map((v) => {
+                                    const selected = selectedVariantId === v.id
+                                    return (
+                                        <Pressable
+                                            key={v.id}
+                                            onPress={() => setSelectedVariantId(v.id)}
+                                            className={`rounded-2xl border-2 px-5 py-3 min-w-[100px] items-center ${
+                                                selected 
+                                                    ? 'border-black bg-black shadow-lg' 
+                                                    : 'border-gray-300 bg-white'
+                                            } active:opacity-80`}
+                                        >
+                                            <Text className={`font-bold text-base mb-1 ${selected ? 'text-white' : 'text-gray-900'}`}>
+                                                {getRadiusFromCode(v.cake_sizes.code)}
+                                            </Text>
+                                            <Text className={`text-sm font-semibold ${selected ? 'text-gray-200' : 'text-gray-600'}`}>
+                                                {formatRSD(v.price_rsd)}
+                                            </Text>
+                                        </Pressable>
+                                    )
+                                })}
+                            </View>
+
+                            <Pressable
+                                disabled={!selectedVariantId}
+                                onPress={() => {
+                                    const v = cake.cake_variants.find((x) => x.id === selectedVariantId)
+                                    if (!v) return
+                                    addItem({
+                                        key: `variant:${cake.id}:${v.id}`,
+                                        cakeId: cake.id,
+                                        cakeName: cake.name,
+                                        variantId: v.id,
+                                        sizeLabel: v.cake_sizes.code,
+                                        unitPriceRsd: v.price_rsd,
+                                    })
+                                    router.push('/(tabs)/cart')
+                                }}
+                                className={`rounded-2xl py-4 active:opacity-90 active:scale-[0.98] ${
+                                    selectedVariantId ? 'bg-black' : 'bg-gray-300'
+                                }`}
+                            >
+                                <Text className="text-center text-white font-bold text-lg">
+                                    {selectedVariantId ? 'Add to Cart' : 'Select a Size'}
+                                </Text>
+                            </Pressable>
+                        </View>
+                    )}
+                </ScrollView>
             )}
-        </View>
+        </SafeAreaView>
     )
 }
