@@ -107,9 +107,14 @@ export default function CakeDetailScreen() {
                     <Text className="text-red-600 font-bold text-lg">Missing cake id</Text>
                     <Pressable 
                         onPress={() => router.back()} 
-                        className="rounded-xl bg-gray-100 px-6 py-3 active:opacity-70"
+                        style={{
+                            borderRadius: 12,
+                            backgroundColor: '#f3f4f6',
+                            paddingHorizontal: 24,
+                            paddingVertical: 12,
+                        }}
                     >
-                        <Text className="font-semibold text-gray-700">Go back</Text>
+                        <Text style={{ fontWeight: '600', color: '#374151' }}>Go back</Text>
                     </Pressable>
                 </View>
             ) : loading ? (
@@ -124,9 +129,14 @@ export default function CakeDetailScreen() {
                     </Text>
                     <Pressable 
                         onPress={() => router.back()} 
-                        className="rounded-xl bg-gray-100 px-6 py-3 active:opacity-70"
+                        style={{
+                            borderRadius: 12,
+                            backgroundColor: '#f3f4f6',
+                            paddingHorizontal: 24,
+                            paddingVertical: 12,
+                        }}
                     >
-                        <Text className="font-semibold text-gray-700">Go back</Text>
+                        <Text style={{ fontWeight: '600', color: '#374151' }}>Go back</Text>
                     </Pressable>
                 </View>
             ) : !cake ? (
@@ -177,9 +187,22 @@ export default function CakeDetailScreen() {
                                     })
                                     router.push('/(tabs)/cart')
                                 }}
-                                className="rounded-2xl bg-black py-4 active:opacity-90 active:scale-[0.98]"
+                                style={{
+                                    borderRadius: 16,
+                                    backgroundColor: '#000000',
+                                    paddingVertical: 16,
+                                }}
                             >
-                                <Text className="text-center text-white font-bold text-lg">Add to Cart</Text>
+                                <Text
+                                    style={{
+                                        textAlign: 'center',
+                                        color: '#ffffff',
+                                        fontWeight: '700',
+                                        fontSize: 18,
+                                    }}
+                                >
+                                    Add to Cart
+                                </Text>
                             </Pressable>
                         </View>
                     ) : (
@@ -193,16 +216,43 @@ export default function CakeDetailScreen() {
                                         <Pressable
                                             key={v.id}
                                             onPress={() => setSelectedVariantId(v.id)}
-                                            className={`rounded-2xl border-2 px-5 py-3 min-w-[100px] items-center ${
-                                                selected 
-                                                    ? 'border-black bg-black shadow-lg' 
-                                                    : 'border-gray-300 bg-white'
-                                            } active:opacity-80`}
+                                            style={[
+                                                {
+                                                    borderRadius: 16,
+                                                    borderWidth: 2,
+                                                    paddingHorizontal: 20,
+                                                    paddingVertical: 12,
+                                                    minWidth: 100,
+                                                    alignItems: 'center',
+                                                },
+                                                selected
+                                                    ? {
+                                                          borderColor: '#000000',
+                                                          backgroundColor: '#000000',
+                                                      }
+                                                    : {
+                                                          borderColor: '#d1d5db',
+                                                          backgroundColor: '#ffffff',
+                                                      },
+                                            ]}
                                         >
-                                            <Text className={`font-bold text-base mb-1 ${selected ? 'text-white' : 'text-gray-900'}`}>
+                                            <Text
+                                                style={{
+                                                    fontWeight: '700',
+                                                    fontSize: 16,
+                                                    marginBottom: 4,
+                                                    color: selected ? '#ffffff' : '#111827',
+                                                }}
+                                            >
                                                 {getRadiusFromCode(v.cake_sizes.code)}
                                             </Text>
-                                            <Text className={`text-sm font-semibold ${selected ? 'text-gray-200' : 'text-gray-600'}`}>
+                                            <Text
+                                                style={{
+                                                    fontSize: 14,
+                                                    fontWeight: '600',
+                                                    color: selected ? '#e5e7eb' : '#4b5563',
+                                                }}
+                                            >
                                                 {formatRSD(v.price_rsd)}
                                             </Text>
                                         </Pressable>
@@ -225,11 +275,20 @@ export default function CakeDetailScreen() {
                                     })
                                     router.push('/(tabs)/cart')
                                 }}
-                                className={`rounded-2xl py-4 active:opacity-90 active:scale-[0.98] ${
-                                    selectedVariantId ? 'bg-black' : 'bg-gray-300'
-                                }`}
+                                style={{
+                                    borderRadius: 16,
+                                    paddingVertical: 16,
+                                    backgroundColor: selectedVariantId ? '#000000' : '#d1d5db',
+                                }}
                             >
-                                <Text className="text-center text-white font-bold text-lg">
+                                <Text
+                                    style={{
+                                        textAlign: 'center',
+                                        color: '#ffffff',
+                                        fontWeight: '700',
+                                        fontSize: 18,
+                                    }}
+                                >
                                     {selectedVariantId ? 'Add to Cart' : 'Select a Size'}
                                 </Text>
                             </Pressable>
