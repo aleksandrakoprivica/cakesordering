@@ -112,10 +112,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const handleSignOut = async () => {
-    await signOut()
-    setUser(guestUser)
-    await AsyncStorage.removeItem(GUEST_MODE_KEY)
-    setHasInitialized(false)
+    try {
+      await signOut()
+    } catch (error) {
+      // Even if signOut fails, we should still clear local state
+      console.warn('Sign out error (continuing anyway):', error)
+    } finally {
+      // Always clear local state regardless of signOut result
+      setUser(guestUser)
+      await AsyncStorage.removeItem(GUEST_MODE_KEY)
+      setHasInitialized(false)
+    }
   }
 
   const handleSetGuestMode = async () => {

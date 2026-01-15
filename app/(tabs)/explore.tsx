@@ -1,11 +1,58 @@
-import { View, Text, ScrollView, Image, Pressable } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 // @ts-expect-error - image asset provided by Metro
 import MuffinImage from "@/assets/images/muffin.jpg";
+import { getUserProfile } from "@/src/lib/auth";
+import { useAuth } from "@/src/lib/auth-context";
 import { Link } from "expo-router";
+import { useEffect, useState } from "react";
 
 export default function ExploreScreen() {
+  const { user } = useAuth();
+  const [displayName, setDisplayName] = useState<string | null>(null);
+
+  // Load user's name for greeting
+  useEffect(() => {
+    let isMounted = true;
+
+    (async () => {
+      try {
+        if (!user || user.role === 'guest' || !user.id || user.id === 'guest') {
+          if (isMounted) setDisplayName(null);
+          return;
+        }
+        const profile = await getUserProfile(user.id);
+        if (!isMounted) return;
+        const first = profile.first_name?.trim() ?? '';
+        const last = profile.last_name?.trim() ?? '';
+        const full = `${first} ${last}`.trim();
+        // Show name if available, otherwise show email or just "Dobrodošli"
+        if (full) {
+          setDisplayName(full);
+        } else if (user.email) {
+          setDisplayName(user.email.split('@')[0]); // Use email username as fallback
+        } else {
+          setDisplayName(''); // Empty string means show just "Dobrodošli"
+        }
+      } catch (e) {
+        console.error('Error loading user profile:', e);
+        if (isMounted) {
+          // On error, still try to show something
+          if (user.email) {
+            setDisplayName(user.email.split('@')[0]);
+          } else {
+            setDisplayName(null);
+          }
+        }
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView
@@ -13,6 +60,11 @@ export default function ExploreScreen() {
         contentContainerClassName="p-5"
         showsVerticalScrollIndicator={false}
       >
+        {displayName !== null && user.role !== 'guest' && (
+          <Text className="text-lg font-bold text-gray-900 mb-4 text-center">
+            Dobrodošli{displayName ? `, ${displayName}` : ''}!
+          </Text>
+        )}
         <View className="items-center mb-8 mt-4">
           <View className="bg-white rounded-full p-2 mb-4 shadow-lg">
             <Image

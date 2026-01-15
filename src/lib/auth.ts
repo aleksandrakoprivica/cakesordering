@@ -141,8 +141,20 @@ export async function signInWithEmail(email: string, password: string) {
 }
 
 export async function signOut() {
-  const { error } = await supabase.auth.signOut()
-  if (error) throw error
+  try {
+    const { error } = await supabase.auth.signOut()
+    // If session is already missing, that's fine - we're already signed out
+    if (error && !error.message?.includes('session') && !error.message?.includes('missing')) {
+      throw error
+    }
+    // If error is about missing session, we can ignore it - user is already signed out
+  } catch (error: any) {
+    // Only throw if it's not a session-related error
+    if (error?.message && !error.message.includes('session') && !error.message.includes('missing')) {
+      throw error
+    }
+    // Otherwise, silently succeed - user is effectively signed out
+  }
 }
 
 

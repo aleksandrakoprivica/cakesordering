@@ -1,38 +1,14 @@
-import { useEffect, useState } from 'react'
-import { ActivityIndicator, Alert, Pressable, SafeAreaView, Text, TextInput, View } from 'react-native'
+// Profile page now only shows basic account info and auth actions.
 import { useAuth } from '@/src/lib/auth-context'
-import { getUserProfile, upsertUserProfile } from '@/src/lib/auth'
+import { useState } from 'react'
+import { ActivityIndicator, Alert, Pressable, SafeAreaView, Text, TextInput, View } from 'react-native'
 
 export default function ProfileScreen() {
   const { user, loading, signIn, signUp, signOutUser } = useAuth()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [savingProfile, setSavingProfile] = useState(false)
-
-  useEffect(() => {
-    if (user.role === 'guest' || !user.id || user.id === 'guest') return
-
-    let isMounted = true
-
-    ;(async () => {
-      try {
-        const profile = await getUserProfile(user.id)
-        if (!isMounted) return
-        setFirstName(profile.first_name ?? '')
-        setLastName(profile.last_name ?? '')
-      } catch (e) {
-        console.warn('Failed to load user profile', e)
-      }
-    })()
-
-    return () => {
-      isMounted = false
-    }
-  }, [user])
 
   const handleSignIn = async () => {
     if (!email || !password) {
@@ -78,26 +54,16 @@ export default function ProfileScreen() {
     setSubmitting(true)
     try {
       await signOutUser()
+      // Sign out successful - user state is already updated in auth context
     } catch (e: any) {
-      Alert.alert('Error', e?.message ?? String(e))
+      // Even if there's an error, the auth context should have cleared the user
+      // Only show error if it's not a session-related issue
+      if (e?.message && !e.message.includes('session') && !e.message.includes('missing')) {
+        Alert.alert('Error', e.message)
+      }
+      // Otherwise, silently succeed - user is effectively signed out
     } finally {
       setSubmitting(false)
-    }
-  }
-
-  const handleSaveProfile = async () => {
-    if (user.role === 'guest' || !user.id || user.id === 'guest') return
-    setSavingProfile(true)
-    try {
-      await upsertUserProfile(user.id, {
-        first_name: firstName.trim() || null,
-        last_name: lastName.trim() || null,
-      })
-      Alert.alert('Sačuvano', 'Ime i prezime su uspešno sačuvani.')
-    } catch (e: any) {
-      Alert.alert('Greška', e?.message ?? 'Neuspešno čuvanje profila.')
-    } finally {
-      setSavingProfile(false)
     }
   }
 
@@ -220,44 +186,6 @@ export default function ProfileScreen() {
               </Text>
             </View>
 
-            <View style={{ marginBottom: 20 }}>
-              <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827', marginBottom: 8 }}>
-                Personal details
-              </Text>
-              <View style={{ marginBottom: 12 }}>
-                <Text style={{ marginBottom: 4, color: '#374151', fontWeight: '500' }}>Ime</Text>
-                <TextInput
-                  value={firstName}
-                  onChangeText={setFirstName}
-                  placeholder="Unesi ime"
-                  style={{
-                    borderRadius: 12,
-                    borderWidth: 1,
-                    borderColor: '#d1d5db',
-                    paddingHorizontal: 12,
-                    paddingVertical: 10,
-                    backgroundColor: '#ffffff',
-                  }}
-                />
-              </View>
-              <View>
-                <Text style={{ marginBottom: 4, color: '#374151', fontWeight: '500' }}>Prezime</Text>
-                <TextInput
-                  value={lastName}
-                  onChangeText={setLastName}
-                  placeholder="Unesi prezime"
-                  style={{
-                    borderRadius: 12,
-                    borderWidth: 1,
-                    borderColor: '#d1d5db',
-                    paddingHorizontal: 12,
-                    paddingVertical: 10,
-                    backgroundColor: '#ffffff',
-                  }}
-                />
-              </View>
-            </View>
-
             {user.role === 'admin' && (
               <View
                 style={{
@@ -277,22 +205,6 @@ export default function ProfileScreen() {
                 </Text>
               </View>
             )}
-
-            <Pressable
-              disabled={savingProfile}
-              onPress={handleSaveProfile}
-              style={{
-                borderRadius: 12,
-                backgroundColor: '#111827',
-                paddingVertical: 12,
-                alignItems: 'center',
-                marginBottom: 12,
-              }}
-            >
-              <Text style={{ color: '#ffffff', fontWeight: '700' }}>
-                {savingProfile ? 'Čuvanje…' : 'Sačuvaj ime i prezime'}
-              </Text>
-            </Pressable>
 
             <Pressable
               disabled={submitting}
