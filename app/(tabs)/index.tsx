@@ -3,7 +3,14 @@ import { fetchCakes, type Cake } from '@/src/lib/cakes'
 import { useCart } from '@/src/lib/cart'
 import { Link } from 'expo-router'
 import { useEffect, useMemo, useState } from 'react'
-import { ActivityIndicator, FlatList, Pressable, Text, TouchableOpacity, View } from 'react-native'
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 type Tab = 'classic' | 'bento'
@@ -166,7 +173,7 @@ export default function HomeScreen() {
       <SafeAreaView className="flex-1 bg-gray-50">
         <View className="flex-1 items-center justify-center gap-3 p-6">
           <ActivityIndicator size="large" color="#000" />
-          <Text className="text-gray-600 text-base">Loading cakes…</Text>
+          <Text className="text-gray-600 text-base">Učitavanje...</Text>
         </View>
       </SafeAreaView>
     )
@@ -178,7 +185,7 @@ export default function HomeScreen() {
         <View className="flex-1 items-center justify-center gap-3 p-6">
           <Text className="text-red-600 font-bold text-lg text-center">❌ {errorMsg}</Text>
           <Text className="text-gray-600 text-center text-sm px-4">
-            Check: RLS SELECT policies, correct URL/key, and that categories have slugs "classic" + "bento".
+            Check: RLS SELECT policies, correct URL/key, and that categories have slugs classic + bento.
           </Text>
         </View>
       </SafeAreaView>

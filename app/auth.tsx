@@ -1,14 +1,20 @@
 import { useState } from 'react'
 import { ActivityIndicator, Alert, Pressable, SafeAreaView, Text, TextInput, View } from 'react-native'
+import { useLocalSearchParams } from 'expo-router'
 import { useAuth } from '@/src/lib/auth-context'
 
 export default function AuthScreen() {
+  const params = useLocalSearchParams<{ from?: string; message?: string }>()
   const { signIn, signUp, setGuestMode } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
   const [isAdminMode, setIsAdminMode] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+
+  const redirectMessage =
+    (typeof params.message === 'string' && params.message) ||
+    (params.from === 'checkout' ? 'You have to log in to place the order.' : null)
 
   const handleSubmit = async () => {
     if (!email || !password) {
@@ -68,6 +74,23 @@ export default function AuthScreen() {
               : 'Welcome! Sign in to continue or browse as a guest.'}
           </Text>
         </View>
+
+        {redirectMessage && (
+          <View
+            style={{
+              marginBottom: 24,
+              padding: 12,
+              borderRadius: 12,
+              backgroundColor: '#fef3c7',
+              borderWidth: 1,
+              borderColor: '#facc15',
+            }}
+          >
+            <Text style={{ color: '#92400e', fontSize: 14, fontWeight: '600' }}>
+              {redirectMessage}
+            </Text>
+          </View>
+        )}
 
         <View style={{ marginBottom: 24 }}>
           <Text style={{ fontSize: 16, fontWeight: '600', color: '#374151', marginBottom: 8 }}>
