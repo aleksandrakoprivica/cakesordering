@@ -424,7 +424,7 @@ export default function MenuScreen() {
                                 fontWeight: "600",
                               }}
                             >
-                              Unavailable
+                              Nedostupno
                             </Text>
                           </View>
                         )}
@@ -476,7 +476,7 @@ export default function MenuScreen() {
                       }}
                     >
                       <Text style={{ color: "#374151", fontWeight: "600" }}>
-                        Edit
+                        Izmeni
                       </Text>
                     </Pressable>
                     <Pressable
@@ -490,7 +490,7 @@ export default function MenuScreen() {
                       }}
                     >
                       <Text style={{ color: "#991b1b", fontWeight: "600" }}>
-                        Delete
+                        Obriši
                       </Text>
                     </Pressable>
                   </View>

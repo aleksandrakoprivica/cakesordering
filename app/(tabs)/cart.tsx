@@ -36,9 +36,8 @@ export default function CartScreen() {
       return;
     }
 
-    // Logged-in user (user or admin) – placeholder order flow
-    Alert.alert("Order placed", "Thank you for your order!");
-    clear();
+    // Navigate to checkout modal
+    router.push("/modal");
   };
 
   return (
