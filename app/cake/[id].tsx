@@ -205,80 +205,32 @@ export default function CakeDetailScreen() {
                                 </Text>
                             </Pressable>
                         </View>
-                    ) : (
+                    ) : cake.cake_variants.length === 0 && cake.base_price_rsd != null ? (
+                        // Non-bento cake with no variants but has base price - allow direct add to cart
                         <View className="bg-white rounded-3xl p-6 shadow-md">
-                            <Text className="text-xl font-bold text-gray-900 mb-4">Choose Size</Text>
-
-                            <View className="flex-row flex-wrap gap-3 mb-6">
-                                {cake.cake_variants.map((v) => {
-                                    const selected = selectedVariantId === v.id
-                                    return (
-                                        <Pressable
-                                            key={v.id}
-                                            onPress={() => setSelectedVariantId(v.id)}
-                                            style={[
-                                                {
-                                                    borderRadius: 16,
-                                                    borderWidth: 2,
-                                                    paddingHorizontal: 20,
-                                                    paddingVertical: 12,
-                                                    minWidth: 100,
-                                                    alignItems: 'center',
-                                                },
-                                                selected
-                                                    ? {
-                                                          borderColor: '#000000',
-                                                          backgroundColor: '#000000',
-                                                      }
-                                                    : {
-                                                          borderColor: '#d1d5db',
-                                                          backgroundColor: '#ffffff',
-                                                      },
-                                            ]}
-                                        >
-                                            <Text
-                                                style={{
-                                                    fontWeight: '700',
-                                                    fontSize: 16,
-                                                    marginBottom: 4,
-                                                    color: selected ? '#ffffff' : '#111827',
-                                                }}
-                                            >
-                                                {getRadiusFromCode(v.cake_sizes.code)}
-                                            </Text>
-                                            <Text
-                                                style={{
-                                                    fontSize: 14,
-                                                    fontWeight: '600',
-                                                    color: selected ? '#e5e7eb' : '#4b5563',
-                                                }}
-                                            >
-                                                {formatRSD(v.price_rsd)}
-                                            </Text>
-                                        </Pressable>
-                                    )
-                                })}
+                            <View className="flex-row items-baseline justify-between mb-6">
+                                <Text className="text-gray-600 font-medium text-lg">Price</Text>
+                                <Text className="text-3xl font-extrabold text-gray-900">
+                                    {formatRSD(cake.base_price_rsd)}
+                                </Text>
                             </View>
 
                             <Pressable
-                                disabled={!selectedVariantId}
                                 onPress={() => {
-                                    const v = cake.cake_variants.find((x) => x.id === selectedVariantId)
-                                    if (!v) return
                                     addItem({
-                                        key: `variant:${cake.id}:${v.id}`,
+                                        key: `base:${cake.id}`,
                                         cakeId: cake.id,
                                         cakeName: cake.name,
-                                        variantId: v.id,
-                                        sizeLabel: v.cake_sizes.code,
-                                        unitPriceRsd: v.price_rsd,
+                                        variantId: null,
+                                        sizeLabel: null,
+                                        unitPriceRsd: cake.base_price_rsd ?? 0,
                                     })
                                     router.push('/(tabs)/cart')
                                 }}
                                 style={{
                                     borderRadius: 16,
+                                    backgroundColor: '#000000',
                                     paddingVertical: 16,
-                                    backgroundColor: selectedVariantId ? '#000000' : '#d1d5db',
                                 }}
                             >
                                 <Text
@@ -289,9 +241,107 @@ export default function CakeDetailScreen() {
                                         fontSize: 18,
                                     }}
                                 >
-                                    {selectedVariantId ? 'Add to Cart' : 'Select a Size'}
+                                    Add to Cart
                                 </Text>
                             </Pressable>
+                        </View>
+                    ) : (
+                        <View className="bg-white rounded-3xl p-6 shadow-md">
+                            <Text className="text-xl font-bold text-gray-900 mb-4">Choose Size</Text>
+
+                            {cake.cake_variants.length === 0 ? (
+                                <View className="mb-6 p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+                                    <Text className="text-yellow-800 text-center font-medium">
+                                        No sizes available. Please contact us for pricing.
+                                    </Text>
+                                </View>
+                            ) : (
+                                <>
+                                    <View className="flex-row flex-wrap gap-3 mb-6">
+                                        {cake.cake_variants.map((v) => {
+                                            const selected = selectedVariantId === v.id
+                                            return (
+                                                <Pressable
+                                                    key={v.id}
+                                                    onPress={() => setSelectedVariantId(v.id)}
+                                                    style={[
+                                                        {
+                                                            borderRadius: 16,
+                                                            borderWidth: 2,
+                                                            paddingHorizontal: 20,
+                                                            paddingVertical: 12,
+                                                            minWidth: 100,
+                                                            alignItems: 'center',
+                                                        },
+                                                        selected
+                                                            ? {
+                                                                  borderColor: '#000000',
+                                                                  backgroundColor: '#000000',
+                                                              }
+                                                            : {
+                                                                  borderColor: '#d1d5db',
+                                                                  backgroundColor: '#ffffff',
+                                                              },
+                                                    ]}
+                                                >
+                                                    <Text
+                                                        style={{
+                                                            fontWeight: '700',
+                                                            fontSize: 16,
+                                                            marginBottom: 4,
+                                                            color: selected ? '#ffffff' : '#111827',
+                                                        }}
+                                                    >
+                                                        {getRadiusFromCode(v.cake_sizes.code)}
+                                                    </Text>
+                                                    <Text
+                                                        style={{
+                                                            fontSize: 14,
+                                                            fontWeight: '600',
+                                                            color: selected ? '#e5e7eb' : '#4b5563',
+                                                        }}
+                                                    >
+                                                        {formatRSD(v.price_rsd)}
+                                                    </Text>
+                                                </Pressable>
+                                            )
+                                        })}
+                                    </View>
+
+                                    <Pressable
+                                        disabled={!selectedVariantId}
+                                        onPress={() => {
+                                            const v = cake.cake_variants.find((x) => x.id === selectedVariantId)
+                                            if (!v) return
+                                            addItem({
+                                                key: `variant:${cake.id}:${v.id}`,
+                                                cakeId: cake.id,
+                                                cakeName: cake.name,
+                                                variantId: v.id,
+                                                sizeLabel: v.cake_sizes.code,
+                                                unitPriceRsd: v.price_rsd,
+                                            })
+                                            router.push('/(tabs)/cart')
+                                        }}
+                                        style={{
+                                            borderRadius: 16,
+                                            paddingVertical: 16,
+                                            backgroundColor: selectedVariantId ? '#000000' : '#d1d5db',
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                textAlign: 'center',
+                                                color: '#ffffff',
+                                                fontWeight: '700',
+                                                fontSize: 18,
+                                            }}
+                                        >
+                                            {selectedVariantId ? 'Add to Cart' : 'Select a Size'}
+                                        </Text>
+                                    </Pressable>
+                                </>
+                            )}
                         </View>
                     )}
                 </ScrollView>

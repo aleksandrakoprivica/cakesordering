@@ -108,6 +108,77 @@ export async function createOrder(input: CreateOrderInput): Promise<string> {
 }
 
 /**
+ * Fetch a single order by ID
+ */
+export async function fetchOrderById(orderId: string): Promise<Order | null> {
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        id,
+        user_id,
+        customer_name,
+        customer_email,
+        customer_phone,
+        delivery_address,
+        delivery_city,
+        delivery_postal_code,
+        delivery_notes,
+        payment_method,
+        total_rsd,
+        status,
+        created_at,
+        order_items (
+          cake_id,
+          cake_name,
+          variant_id,
+          size_label,
+          unit_price_rsd,
+          quantity
+        )
+      `)
+      .eq('id', orderId)
+      .single()
+
+    if (error) {
+      console.error('fetchOrderById error:', error)
+      throw error
+    }
+
+    if (!data) {
+      return null
+    }
+
+    return {
+      id: data.id || '',
+      user_id: data.user_id || '',
+      customer_name: data.customer_name || '',
+      customer_email: data.customer_email || '',
+      customer_phone: data.customer_phone || '',
+      delivery_address: data.delivery_address || '',
+      delivery_city: data.delivery_city || '',
+      delivery_postal_code: data.delivery_postal_code || '',
+      delivery_notes: data.delivery_notes ?? null,
+      payment_method: data.payment_method || 'cash',
+      total_rsd: data.total_rsd || 0,
+      status: data.status || 'pending',
+      created_at: data.created_at || '',
+      items: (data.order_items || []).map((item: any) => ({
+        cake_id: item.cake_id || '',
+        cake_name: item.cake_name || '',
+        variant_id: item.variant_id ?? null,
+        size_label: item.size_label ?? null,
+        unit_price_rsd: item.unit_price_rsd || 0,
+        quantity: item.quantity || 0,
+      })),
+    }
+  } catch (error: any) {
+    console.error('fetchOrderById error:', error)
+    throw error
+  }
+}
+
+/**
  * Fetch all orders (for admin)
  */
 export async function fetchAllOrders(): Promise<Order[]> {
@@ -186,4 +257,5 @@ export function cartItemsToOrderItems(cartItems: CartItem[]): OrderItem[] {
     quantity: item.qty,
   }))
 }
+
 

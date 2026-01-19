@@ -1,7 +1,7 @@
 import { useAuth } from '@/src/lib/auth-context'
 import { fetchCakes, type Cake } from '@/src/lib/cakes'
 import { useCart } from '@/src/lib/cart'
-import { Link } from 'expo-router'
+import { Link, router } from 'expo-router'
 import { useEffect, useMemo, useState } from 'react'
 import {
   ActivityIndicator,
@@ -228,6 +228,7 @@ export default function HomeScreen() {
             keyExtractor={(item) => item.id}
             ItemSeparatorComponent={() => <View className="h-4" />}
             showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
             renderItem={({ item }) => {
               if (!item || !item.id) return null
               
@@ -238,7 +239,7 @@ export default function HomeScreen() {
                 const basePrice = typeof item.base_price_rsd === 'number' ? item.base_price_rsd : null
                 
                 return (
-                  <View className="rounded-3xl border border-gray-200 bg-white p-5 shadow-md">
+                  <View className="rounded-3xl border border-gray-200 bg-white p-5 shadow-md" style={{ overflow: 'hidden', width: '100%' }}>
                     <Link href={`/cake/${item.id}`} asChild>
                       <Pressable className="active:opacity-90 web:cursor-pointer">
                         <Text className="text-xl font-bold text-gray-900 mb-2">{name}</Text>
@@ -259,20 +260,26 @@ export default function HomeScreen() {
                             </View>
                           </View>
                         ) : (
-                          <View className="mt-4 flex-row flex-wrap">
-                            {variants.filter(v => v && v.id && v.cake_sizes).map((v) => (
-                              <SizeChip
-                                key={String(v.id)}
-                                label={getRadiusFromCode(v.cake_sizes?.code)}
-                                price={formatRSD(typeof v.price_rsd === 'number' ? v.price_rsd : 0)}
-                              />
-                            ))}
+                          <View className="mt-4">
+                            {variants.length > 0 ? (
+                              <View className="flex-row flex-wrap">
+                                {variants.filter(v => v && v.id && v.cake_sizes).map((v) => (
+                                  <SizeChip
+                                    key={String(v.id)}
+                                    label={getRadiusFromCode(v.cake_sizes?.code)}
+                                    price={formatRSD(typeof v.price_rsd === 'number' ? v.price_rsd : 0)}
+                                  />
+                                ))}
+                              </View>
+                            ) : (
+                              <Text className="text-gray-500 text-sm">Nema dostupnih veličina</Text>
+                            )}
                           </View>
                         )}
                       </Pressable>
                     </Link>
 
-                    <View className="mt-4">
+                    <View className="mt-4" style={{ flex: 1, width: '100%' }}>
                       {isBento ? (
                         <Pressable
                           onPress={() => {
@@ -292,7 +299,10 @@ export default function HomeScreen() {
                             borderRadius: 12,
                             backgroundColor: justAddedKey === `bento:${item.id}` ? '#16a34a' : '#000000',
                             paddingVertical: 12,
-                            paddingHorizontal: 16,
+                            flex: 1,
+                            alignSelf: 'stretch',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                           }}
                         >
                           <Text
@@ -333,7 +343,10 @@ export default function HomeScreen() {
                                 ? '#16a34a'
                                 : '#000000',
                             paddingVertical: 12,
-                            paddingHorizontal: 16,
+                            flex: 1,
+                            alignSelf: 'stretch',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                           }}
                         >
                           <Text
@@ -351,7 +364,34 @@ export default function HomeScreen() {
                               : 'Dodaj u korpu'}
                           </Text>
                         </Pressable>
-                      ) : null}
+                      ) : (
+                        // Classic cake with no variants - navigate to detail page to select size
+                        <Pressable
+                          onPress={() => {
+                            router.push(`/cake/${item.id}`)
+                          }}
+                          style={{
+                            borderRadius: 12,
+                            backgroundColor: '#000000',
+                            paddingVertical: 12,
+                            flex: 1,
+                            alignSelf: 'stretch',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <Text
+                            style={{
+                              textAlign: 'center',
+                              color: '#ffffff',
+                              fontWeight: '700',
+                              fontSize: 16,
+                            }}
+                          >
+                            Izaberi veličinu
+                          </Text>
+                        </Pressable>
+                      )}
                     </View>
                   </View>
                 )

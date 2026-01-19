@@ -123,7 +123,6 @@ export async function fetchCakeVariants(cakeId: string) {
         id,
         price_rsd,
         is_available,
-        cake_size_id,
         cake_sizes (
           id,
           name,
@@ -142,7 +141,7 @@ export async function fetchCakeVariants(cakeId: string) {
       id: variant.id || '',
       price_rsd: variant.price_rsd || 0,
       is_available: Boolean(variant.is_available),
-      cake_size_id: variant.cake_size_id || '',
+      cake_size_id: variant.cake_sizes?.id || '',
       cake_sizes: variant.cake_sizes ? {
         id: variant.cake_sizes.id || '',
         name: variant.cake_sizes.name || '',
@@ -187,9 +186,10 @@ export async function setCakeVariants(
     }
 
     // Create new variants
+    // The foreign key column name should match Supabase's convention: cake_size_id
     const insertData = variants.map((v) => ({
       cake_id: cakeId,
-      cake_size_id: v.size_id,
+      cake_size_id: v.size_id, // Use cake_size_id to match the foreign key column name
       price_rsd: Number(v.price_rsd),
       is_available: true,
     }))
@@ -202,6 +202,28 @@ export async function setCakeVariants(
 
     if (insertError) {
       console.error('Error creating variants:', insertError)
+      // If cake_size_id doesn't work, try alternative column names
+      if (insertError.code === 'PGRST204' || insertError.message?.includes('column') || insertError.message?.includes('size')) {
+        // Try with size_id as fallback
+        const fallbackData = variants.map((v) => ({
+          cake_id: cakeId,
+          size_id: v.size_id,
+          price_rsd: Number(v.price_rsd),
+          is_available: true,
+        }))
+        
+        const { error: fallbackError } = await supabase
+          .from('cake_variants')
+          .insert(fallbackData)
+        
+        if (fallbackError) {
+          throw new Error(
+            `Failed to create variants. Column name issue. Original error: ${insertError.message}. ` +
+            'Please check your cake_variants table schema. The foreign key column should be named cake_size_id or size_id.'
+          )
+        }
+        return // Success with fallback
+      }
       throw insertError
     }
   } catch (error: any) {

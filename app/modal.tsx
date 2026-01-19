@@ -69,7 +69,7 @@ export default function CheckoutModal() {
     setLoading(true)
     try {
       const orderItems = cartItemsToOrderItems(items)
-      await createOrder({
+      const orderId = await createOrder({
         user_id: user.id,
         customer_name: customerName.trim(),
         customer_email: customerEmail.trim(),
@@ -84,16 +84,11 @@ export default function CheckoutModal() {
       })
 
       clear()
-      Alert.alert('Success', 'Your order has been placed!', [
-        {
-          text: 'OK',
-          onPress: () => router.back(),
-        },
-      ])
+      // Redirect to confirmation page
+      router.replace(`/order-confirmation/${orderId}`)
     } catch (error: any) {
       console.error('Checkout error:', error)
       Alert.alert('Error', error.message || 'Failed to place order. Please try again.')
-    } finally {
       setLoading(false)
     }
   }

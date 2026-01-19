@@ -40,6 +40,8 @@ export default function AuthScreen() {
     }
     setSubmitting(true);
     try {
+      const isFromCheckout = params.from === "checkout";
+      
       if (isSignUp && !isAdminMode) {
         const data = await signUpWithEmail(email.trim(), password);
         const userId = data.user?.id;
@@ -49,12 +51,20 @@ export default function AuthScreen() {
             last_name: lastName.trim() || null,
           });
         }
-        Alert.alert("Success", "Account created! You are now signed in.");
+        if (isFromCheckout) {
+          // Redirect to cart after sign up from checkout
+          router.replace("/(tabs)/cart");
+        } else {
+          Alert.alert("Success", "Account created! You are now signed in.");
+        }
       } else {
         await signIn(email.trim(), password);
         if (isAdminMode) {
           // Redirect admin to menu editing page
           router.replace("/(tabs)/menu");
+        } else if (isFromCheckout) {
+          // Redirect to cart after sign in from checkout
+          router.replace("/(tabs)/cart");
         } else {
           Alert.alert("Success", "You are now signed in.");
         }

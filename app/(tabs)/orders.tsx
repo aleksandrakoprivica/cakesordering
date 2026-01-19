@@ -150,13 +150,22 @@ export default function OrdersScreen() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [tableError, setTableError] = useState(false);
 
   const loadOrders = async () => {
     try {
+      setTableError(false);
       const data = await fetchAllOrders();
       setOrders(data);
     } catch (error: any) {
       console.error("Failed to load orders:", error);
+      // Check if it's a table missing error
+      if (
+        error?.code === "PGRST205" ||
+        error?.message?.includes("Could not find the table")
+      ) {
+        setTableError(true);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -209,11 +218,29 @@ export default function OrdersScreen() {
             <ActivityIndicator size="large" color="#000" />
             <Text className="text-gray-500 mt-4">Učitavanje porudžbina...</Text>
           </View>
+        ) : tableError ? (
+          <View className="flex-1 items-center justify-center py-20 px-6">
+            <Text className="text-6xl mb-4">⚠️</Text>
+            <Text className="text-gray-900 text-center text-lg font-bold mb-2">
+              Tabele u bazi podataka nisu pronađene
+            </Text>
+            <Text className="text-gray-600 text-center text-sm mb-4">
+              Potrebno je kreirati tabele za porudžbine u Supabase bazi podataka.
+            </Text>
+            <View className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mt-4">
+              <Text className="text-yellow-800 text-xs font-semibold mb-2">
+                Pokrenite SQL u Supabase SQL Editoru:
+              </Text>
+              <Text className="text-yellow-900 text-xs font-mono">
+                Pogledajte database-setup.sql fajl
+              </Text>
+            </View>
+          </View>
         ) : orders.length === 0 ? (
           <View className="flex-1 items-center justify-center py-20">
             <Text className="text-6xl mb-4">📦</Text>
             <Text className="text-gray-500 text-center text-lg font-medium">
-              No orders yet
+              Još uvek nema porudžbina.
             </Text>
             <Text className="text-gray-400 text-center text-sm mt-2">
               Porudžbine će biti vidljive ovde.

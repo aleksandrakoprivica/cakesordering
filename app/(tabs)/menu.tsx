@@ -300,7 +300,7 @@ export default function MenuScreen() {
             marginBottom: 24,
           }}
         >
-          <View>
+          <View style={{ flex: 1, flexShrink: 1, marginRight: 12 }}>
             <Text style={{ fontSize: 32, fontWeight: "800", color: "#111827" }}>
               Upravljanje menijem
             </Text>
@@ -311,10 +311,11 @@ export default function MenuScreen() {
           <Pressable
             onPress={openAddModal}
             style={{
-              backgroundColor: "#000000",
-              paddingHorizontal: 20,
+              backgroundColor: "#6b7280",
+              paddingHorizontal: 16,
               paddingVertical: 12,
               borderRadius: 12,
+              flexShrink: 0,
             }}
           >
             <Text style={{ color: "#ffffff", fontWeight: "700", fontSize: 16 }}>
