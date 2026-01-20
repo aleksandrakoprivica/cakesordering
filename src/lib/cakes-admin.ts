@@ -186,46 +186,47 @@ export async function setCakeVariants(
     }
 
     // Create new variants
-    // The foreign key column name should match Supabase's convention: cake_size_id
-    const insertData = variants.map((v) => ({
-      cake_id: cakeId,
-      cake_size_id: v.size_id, // Use cake_size_id to match the foreign key column name
-      price_rsd: Number(v.price_rsd),
-      is_available: true,
-    }))
+    // Try different possible column names for the foreign key
+    // Since the relation is named "cake_sizes" (plural), try cake_sizes_id first
+    const possibleColumnNames = ['cake_sizes_id', 'cake_size_id', 'size_id']
+    
+    let lastError: any = null
+    for (const columnName of possibleColumnNames) {
+      const insertData = variants.map((v) => ({
+        cake_id: cakeId,
+        [columnName]: v.size_id,
+        price_rsd: Number(v.price_rsd),
+        is_available: true,
+      }))
 
-    console.log('Creating variants:', JSON.stringify(insertData, null, 2))
+      console.log(`Trying to create variants with column name: ${columnName}`)
+      console.log('Creating variants:', JSON.stringify(insertData, null, 2))
 
-    const { error: insertError } = await supabase
-      .from('cake_variants')
-      .insert(insertData)
+      const { error: insertError } = await supabase
+        .from('cake_variants')
+        .insert(insertData)
 
-    if (insertError) {
-      console.error('Error creating variants:', insertError)
-      // If cake_size_id doesn't work, try alternative column names
-      if (insertError.code === 'PGRST204' || insertError.message?.includes('column') || insertError.message?.includes('size')) {
-        // Try with size_id as fallback
-        const fallbackData = variants.map((v) => ({
-          cake_id: cakeId,
-          size_id: v.size_id,
-          price_rsd: Number(v.price_rsd),
-          is_available: true,
-        }))
-        
-        const { error: fallbackError } = await supabase
-          .from('cake_variants')
-          .insert(fallbackData)
-        
-        if (fallbackError) {
-          throw new Error(
-            `Failed to create variants. Column name issue. Original error: ${insertError.message}. ` +
-            'Please check your cake_variants table schema. The foreign key column should be named cake_size_id or size_id.'
-          )
-        }
-        return // Success with fallback
+      if (!insertError) {
+        // Success! This column name works
+        console.log(`✅ Successfully created variants using column name: ${columnName}`)
+        return
       }
-      throw insertError
+
+      lastError = insertError
+      console.log(`❌ Failed with ${columnName}:`, insertError.message)
+      
+      // If it's not a column name error, don't try other names
+      if (insertError.code !== 'PGRST204' && !insertError.message?.includes('column') && !insertError.message?.includes('size')) {
+        throw insertError
+      }
     }
+
+    // If we get here, all column name attempts failed
+    throw new Error(
+      `Failed to create variants. Tried column names: ${possibleColumnNames.join(', ')}. ` +
+      `Last error: ${lastError?.message || 'Unknown error'}. ` +
+      'Please check your cake_variants table schema in Supabase Dashboard → Table Editor to find the correct foreign key column name.'
+    )
   } catch (error: any) {
     console.error('setCakeVariants error:', error)
     throw error

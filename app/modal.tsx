@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { View, Text, TextInput, Pressable, ScrollView, Alert, ActivityIndicator } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import { useAuth } from '@/src/lib/auth-context'
 import { useCart } from '@/src/lib/cart'
 import { createOrder, cartItemsToOrderItems, type PaymentMethod } from '@/src/lib/orders'
+import { getUserProfile } from '@/src/lib/auth'
 
 function formatRSD(rsd: number) {
   return rsd.toLocaleString('sr-RS', {
@@ -18,6 +19,23 @@ export default function CheckoutModal() {
   const { user } = useAuth()
   const { items, clear } = useCart()
   const [loading, setLoading] = useState(false)
+  const [userProfile, setUserProfile] = useState<{ first_name: string | null; last_name: string | null } | null>(null)
+
+  // Load user profile to pre-fill name
+  useEffect(() => {
+    if (user.id && user.id !== 'guest') {
+      getUserProfile(user.id).then(profile => {
+        setUserProfile(profile)
+        // Pre-fill name if available
+        if (profile.first_name || profile.last_name) {
+          const fullName = [profile.first_name, profile.last_name].filter(Boolean).join(' ')
+          if (fullName) {
+            setCustomerName(fullName)
+          }
+        }
+      }).catch(err => console.error('Failed to load user profile:', err))
+    }
+  }, [user.id])
 
   // Customer info
   const [customerName, setCustomerName] = useState('')
@@ -66,6 +84,25 @@ export default function CheckoutModal() {
       return
     }
 
+    // If card payment, redirect to Stripe payment page
+    if (paymentMethod === 'card') {
+      router.push({
+        pathname: '/payment',
+        params: {
+          customerName: customerName.trim(),
+          customerEmail: customerEmail.trim(),
+          customerPhone: customerPhone.trim(),
+          deliveryAddress: deliveryAddress.trim(),
+          deliveryCity: deliveryCity.trim(),
+          deliveryPostalCode: deliveryPostalCode.trim(),
+          deliveryNotes: deliveryNotes.trim() || '',
+          total: total.toString(),
+        },
+      })
+      return
+    }
+
+    // For cash payment, create order directly
     setLoading(true)
     try {
       const orderItems = cartItemsToOrderItems(items)

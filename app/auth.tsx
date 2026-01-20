@@ -29,14 +29,32 @@ export default function AuthScreen() {
       ? "You have to log in to place the order."
       : null);
 
+  const validatePassword = (pwd: string): string | null => {
+    if (pwd.length < 6) {
+      return "Password must be at least 6 characters long.";
+    }
+    if (!/[A-Z]/.test(pwd)) {
+      return "Password must contain at least one uppercase letter.";
+    }
+    if (!/[0-9]/.test(pwd)) {
+      return "Password must contain at least one number.";
+    }
+    return null;
+  };
+
   const handleSubmit = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Please enter email and password.");
       return;
     }
-    if (password.length < 6) {
-      Alert.alert("Error", "Password should be at least 6 characters long.");
-      return;
+    // Only validate password for sign-up, not sign-in
+    // This allows existing users (including admins) to sign in with their old passwords
+    if (isSignUp && !isAdminMode) {
+      const passwordError = validatePassword(password);
+      if (passwordError) {
+        Alert.alert("Error", passwordError);
+        return;
+      }
     }
     setSubmitting(true);
     try {
@@ -304,6 +322,17 @@ export default function AuthScreen() {
                 borderColor: "#e5e7eb",
               }}
             />
+            {isSignUp && !isAdminMode && (
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: "#6b7280",
+                  marginTop: 6,
+                }}
+              >
+                Lozinka mora imati najmanje 6 karaktera, jedno veliko slovo i jedan broj.
+              </Text>
+            )}
           </View>
 
           <Pressable

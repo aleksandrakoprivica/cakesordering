@@ -130,9 +130,16 @@ function OrderCard({ order }: { order: Order }) {
       {/* Payment & Total */}
       <View className="flex-row items-center justify-between">
         <View>
-          <Text className="text-sm text-gray-600">
-            Plaćanje: {order.payment_method.toUpperCase()}
-          </Text>
+          <View className="flex-row items-center gap-2">
+            <Text className="text-sm text-gray-600">
+              Plaćanje: {order.payment_method.toUpperCase()}
+            </Text>
+            {order.payment_method === 'card' && (
+              <View className="bg-green-100 px-2 py-0.5 rounded-full">
+                <Text className="text-green-700 font-semibold text-xs">✓ Plaćeno</Text>
+              </View>
+            )}
+          </View>
         </View>
         <View className="items-end">
           <Text className="text-sm text-gray-600 mb-1">Total</Text>

@@ -63,7 +63,7 @@ export default function CakeDetailScreen() {
                     .select(`
             id,name,ingredients,base_price_rsd,is_bento,
             cake_variants (
-              id,price_rsd,
+              id,price_rsd,is_available,
               cake_sizes ( id,name,code,sort_order )
             )
           `)
@@ -80,6 +80,7 @@ export default function CakeDetailScreen() {
                     base_price_rsd: data.base_price_rsd ?? null,
                     is_bento: !!data.is_bento,
                     cake_variants: (data.cake_variants ?? [])
+                        .filter((v: any) => v && v.is_available && v.cake_sizes != null)
                         .map((v: any) => ({
                             id: v.id,
                             price_rsd: v.price_rsd,
@@ -87,6 +88,16 @@ export default function CakeDetailScreen() {
                         }))
                         .filter((v: any) => v.cake_sizes)
                         .sort((a: any, b: any) => (a.cake_sizes.sort_order ?? 0) - (b.cake_sizes.sort_order ?? 0)),
+                }
+
+                // Debug logging
+                if (!normalized.is_bento && normalized.cake_variants.length === 0) {
+                    console.log('⚠️ Classic cake with no variants:', {
+                        cakeId: normalized.id,
+                        cakeName: normalized.name,
+                        rawVariants: data.cake_variants,
+                        filteredCount: normalized.cake_variants.length,
+                    })
                 }
 
                 setCake(normalized)
@@ -151,12 +162,6 @@ export default function CakeDetailScreen() {
                 >
                     <View className="bg-white rounded-3xl p-6 shadow-md mb-4">
                         <Text className="text-3xl font-extrabold text-gray-900 mb-3">{cake.name}</Text>
-                        
-                        {cake.is_bento && (
-                            <View className="self-start bg-pink-100 px-3 py-1 rounded-full mb-3">
-                                <Text className="text-pink-700 font-semibold text-xs">Bento Cake</Text>
-                            </View>
-                        )}
 
                         {!!cake.ingredients && (
                             <View className="mt-4 p-4 bg-gray-50 rounded-2xl">
@@ -327,6 +332,7 @@ export default function CakeDetailScreen() {
                                             borderRadius: 16,
                                             paddingVertical: 16,
                                             backgroundColor: selectedVariantId ? '#000000' : '#d1d5db',
+                                            opacity: selectedVariantId ? 1 : 0.6,
                                         }}
                                     >
                                         <Text
@@ -337,7 +343,7 @@ export default function CakeDetailScreen() {
                                                 fontSize: 18,
                                             }}
                                         >
-                                            {selectedVariantId ? 'Add to Cart' : 'Select a Size'}
+                                            {selectedVariantId ? 'Dodaj u korpu' : 'Izaberite veličinu'}
                                         </Text>
                                     </Pressable>
                                 </>
