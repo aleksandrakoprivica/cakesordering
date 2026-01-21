@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  View,
-  Text,
-  FlatList,
-  ActivityIndicator,
-  RefreshControl,
-  Pressable,
-} from "react-native";
 import { useAuth } from "@/src/lib/auth-context";
-import { fetchAllOrders, type Order } from "@/src/lib/orders";
+import { fetchAllOrders, updateOrderStatus, type Order } from "@/src/lib/orders";
+import { useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Pressable,
+    RefreshControl,
+    Text,
+    View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 function formatRSD(rsd: number) {
   return rsd.toLocaleString("sr-RS", {
@@ -32,24 +33,22 @@ function formatDate(dateString: string) {
 
 function getStatusColor(status: Order["status"]) {
   switch (status) {
-    case "pending":
+    case "received":
       return "bg-yellow-100 text-yellow-800";
-    case "confirmed":
-      return "bg-blue-100 text-blue-800";
-    case "preparing":
-      return "bg-purple-100 text-purple-800";
-    case "ready":
+    case "done":
       return "bg-green-100 text-green-800";
-    case "delivered":
-      return "bg-gray-100 text-gray-800";
-    case "cancelled":
-      return "bg-red-100 text-red-800";
     default:
       return "bg-gray-100 text-gray-800";
   }
 }
 
-function OrderCard({ order }: { order: Order }) {
+function OrderCard({ 
+  order, 
+  onMarkAsDone 
+}: { 
+  order: Order
+  onMarkAsDone: (orderId: string) => void
+}) {
   return (
     <View className="rounded-2xl border border-gray-200 bg-white p-5 mb-4 shadow-sm">
       {/* Header */}
@@ -66,7 +65,7 @@ function OrderCard({ order }: { order: Order }) {
           className={`px-3 py-1 rounded-full ${getStatusColor(order.status)}`}
         >
           <Text className="text-xs font-semibold capitalize">
-            {order.status}
+            {order.status === 'received' ? 'Primljena' : 'Završena'}
           </Text>
         </View>
       </View>
@@ -128,7 +127,7 @@ function OrderCard({ order }: { order: Order }) {
       </View>
 
       {/* Payment & Total */}
-      <View className="flex-row items-center justify-between">
+      <View className="flex-row items-center justify-between mb-4">
         <View>
           <View className="flex-row items-center gap-2">
             <Text className="text-sm text-gray-600">
@@ -148,9 +147,23 @@ function OrderCard({ order }: { order: Order }) {
           </Text>
         </View>
       </View>
+
+      {/* Mark as Done Button */}
+      {order.status === 'received' && (
+        <Pressable
+          onPress={() => onMarkAsDone(order.id)}
+          className="rounded-xl bg-green-600 py-3 active:opacity-80"
+        >
+          <Text className="text-center text-white font-bold text-base">
+            Označi kao završeno
+          </Text>
+        </Pressable>
+      )}
     </View>
   );
 }
+
+type OrderTab = 'received' | 'done';
 
 export default function OrdersScreen() {
   const { user } = useAuth();
@@ -158,6 +171,7 @@ export default function OrdersScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [tableError, setTableError] = useState(false);
+  const [activeTab, setActiveTab] = useState<OrderTab>('received');
 
   const loadOrders = async () => {
     try {
@@ -190,6 +204,33 @@ export default function OrdersScreen() {
     loadOrders();
   };
 
+  const handleMarkAsDone = async (orderId: string) => {
+    Alert.alert(
+      'Označi kao završeno',
+      'Da li ste sigurni da želite da označite ovu porudžbinu kao završenu?',
+      [
+        {
+          text: 'Otkaži',
+          style: 'cancel',
+        },
+        {
+          text: 'Potvrdi',
+          onPress: async () => {
+            try {
+              await updateOrderStatus(orderId, 'done');
+              // Reload orders
+              await loadOrders();
+            } catch (error: any) {
+              Alert.alert('Greška', error.message || 'Neuspešno ažuriranje statusa porudžbine');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const filteredOrders = orders.filter((order) => order.status === activeTab);
+
   if (user.role !== "admin") {
     return (
       <SafeAreaView className="flex-1 bg-gray-50">
@@ -220,6 +261,42 @@ export default function OrdersScreen() {
           </Pressable>
         </View>
 
+        {/* Tabs */}
+        <View className="flex-row gap-3 mb-6">
+          <Pressable
+            onPress={() => setActiveTab('received')}
+            className={`flex-1 rounded-xl py-3 ${
+              activeTab === 'received'
+                ? 'bg-black'
+                : 'bg-white border border-gray-300'
+            }`}
+          >
+            <Text
+              className={`text-center font-bold text-base ${
+                activeTab === 'received' ? 'text-white' : 'text-gray-900'
+              }`}
+            >
+              Primljene ({orders.filter((o) => o.status === 'received').length})
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setActiveTab('done')}
+            className={`flex-1 rounded-xl py-3 ${
+              activeTab === 'done'
+                ? 'bg-black'
+                : 'bg-white border border-gray-300'
+            }`}
+          >
+            <Text
+              className={`text-center font-bold text-base ${
+                activeTab === 'done' ? 'text-white' : 'text-gray-900'
+              }`}
+            >
+              Završene ({orders.filter((o) => o.status === 'done').length})
+            </Text>
+          </Pressable>
+        </View>
+
         {loading ? (
           <View className="flex-1 items-center justify-center">
             <ActivityIndicator size="large" color="#000" />
@@ -243,11 +320,13 @@ export default function OrdersScreen() {
               </Text>
             </View>
           </View>
-        ) : orders.length === 0 ? (
+        ) : filteredOrders.length === 0 ? (
           <View className="flex-1 items-center justify-center py-20">
             <Text className="text-6xl mb-4">📦</Text>
             <Text className="text-gray-500 text-center text-lg font-medium">
-              Još uvek nema porudžbina.
+              {activeTab === 'received'
+                ? 'Nema primljenih porudžbina.'
+                : 'Nema završenih porudžbina.'}
             </Text>
             <Text className="text-gray-400 text-center text-sm mt-2">
               Porudžbine će biti vidljive ovde.
@@ -255,9 +334,11 @@ export default function OrdersScreen() {
           </View>
         ) : (
           <FlatList
-            data={orders}
+            data={filteredOrders}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <OrderCard order={item} />}
+            renderItem={({ item }) => (
+              <OrderCard order={item} onMarkAsDone={handleMarkAsDone} />
+            )}
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

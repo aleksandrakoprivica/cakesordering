@@ -38,7 +38,7 @@ export type Order = {
   delivery_notes: string | null
   payment_method: PaymentMethod
   total_rsd: number
-  status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
+  status: 'received' | 'done'
   created_at: string
   items: OrderItem[]
 }
@@ -62,7 +62,7 @@ export async function createOrder(input: CreateOrderInput): Promise<string> {
         delivery_notes: input.delivery_notes,
         payment_method: input.payment_method,
         total_rsd: input.total_rsd,
-        status: 'pending',
+        status: 'received',
       })
       .select('id')
       .single()
@@ -161,7 +161,7 @@ export async function fetchOrderById(orderId: string): Promise<Order | null> {
       delivery_notes: data.delivery_notes ?? null,
       payment_method: data.payment_method || 'cash',
       total_rsd: data.total_rsd || 0,
-      status: data.status || 'pending',
+      status: (data.status === 'done' ? 'done' : 'received') as 'received' | 'done',
       created_at: data.created_at || '',
       items: (data.order_items || []).map((item: any) => ({
         cake_id: item.cake_id || '',
@@ -227,7 +227,7 @@ export async function fetchAllOrders(): Promise<Order[]> {
       delivery_notes: order.delivery_notes ?? null,
       payment_method: order.payment_method || 'cash',
       total_rsd: order.total_rsd || 0,
-      status: order.status || 'pending',
+      status: (order.status === 'done' ? 'done' : 'received') as 'received' | 'done',
       created_at: order.created_at || '',
       items: (order.order_items || []).map((item: any) => ({
         cake_id: item.cake_id || '',
@@ -240,6 +240,93 @@ export async function fetchAllOrders(): Promise<Order[]> {
     }))
   } catch (error: any) {
     console.error('fetchAllOrders error:', error)
+    throw error
+  }
+}
+
+/**
+ * Update order status
+ */
+export async function updateOrderStatus(orderId: string, status: 'received' | 'done'): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('orders')
+      .update({ status })
+      .eq('id', orderId)
+
+    if (error) {
+      console.error('updateOrderStatus error:', error)
+      throw new Error(error.message || 'Failed to update order status')
+    }
+  } catch (error: any) {
+    console.error('updateOrderStatus error:', error)
+    throw error
+  }
+}
+
+/**
+ * Fetch orders by user ID
+ */
+export async function fetchOrdersByUserId(userId: string): Promise<Order[]> {
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        id,
+        user_id,
+        customer_name,
+        customer_email,
+        customer_phone,
+        delivery_address,
+        delivery_city,
+        delivery_postal_code,
+        delivery_notes,
+        payment_method,
+        total_rsd,
+        status,
+        created_at,
+        order_items (
+          cake_id,
+          cake_name,
+          variant_id,
+          size_label,
+          unit_price_rsd,
+          quantity
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('fetchOrdersByUserId error:', error)
+      throw error
+    }
+
+    return (data ?? []).map((order: any) => ({
+      id: order.id || '',
+      user_id: order.user_id || '',
+      customer_name: order.customer_name || '',
+      customer_email: order.customer_email || '',
+      customer_phone: order.customer_phone || '',
+      delivery_address: order.delivery_address || '',
+      delivery_city: order.delivery_city || '',
+      delivery_postal_code: order.delivery_postal_code || '',
+      delivery_notes: order.delivery_notes ?? null,
+      payment_method: order.payment_method || 'cash',
+      total_rsd: order.total_rsd || 0,
+      status: (order.status === 'done' ? 'done' : 'received') as 'received' | 'done',
+      created_at: order.created_at || '',
+      items: (order.order_items || []).map((item: any) => ({
+        cake_id: item.cake_id || '',
+        cake_name: item.cake_name || '',
+        variant_id: item.variant_id ?? null,
+        size_label: item.size_label ?? null,
+        unit_price_rsd: item.unit_price_rsd || 0,
+        quantity: item.quantity || 0,
+      })),
+    }))
+  } catch (error: any) {
+    console.error('fetchOrdersByUserId error:', error)
     throw error
   }
 }

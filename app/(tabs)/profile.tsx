@@ -1,6 +1,7 @@
 // Profile page now only shows basic account info and auth actions.
 import { useAuth } from "@/src/lib/auth-context";
 import { useState } from "react";
+import { router } from "expo-router";
 import {
   ActivityIndicator,
   Alert,
@@ -232,6 +233,22 @@ export default function ProfileScreen() {
                 Role: <Text style={{ fontWeight: "700" }}>{user.role}</Text>
               </Text>
             </View>
+
+            {/* My Orders Button */}
+            <Pressable
+              onPress={() => router.push("/my-orders")}
+              style={{
+                borderRadius: 12,
+                backgroundColor: "#000000",
+                paddingVertical: 12,
+                alignItems: "center",
+                marginBottom: 16,
+              }}
+            >
+              <Text style={{ color: "#ffffff", fontWeight: "700" }}>
+                Moje Porudžbine
+              </Text>
+            </Pressable>
 
             {user.role === "admin" && (
               <View

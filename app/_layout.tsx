@@ -37,6 +37,7 @@ function RootLayoutNav() {
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
         <Stack.Screen name="payment" options={{ headerShown: false }} />
         <Stack.Screen name="order-confirmation/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="my-orders" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
-import { View, Text, TextInput, Pressable, ScrollView, Alert, ActivityIndicator } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { router } from 'expo-router'
+import { getUserProfile } from '@/src/lib/auth'
 import { useAuth } from '@/src/lib/auth-context'
 import { useCart } from '@/src/lib/cart'
-import { createOrder, cartItemsToOrderItems, type PaymentMethod } from '@/src/lib/orders'
-import { getUserProfile } from '@/src/lib/auth'
+import { cartItemsToOrderItems, createOrder, type PaymentMethod } from '@/src/lib/orders'
+import { router } from 'expo-router'
+import { useEffect, useState } from 'react'
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 function formatRSD(rsd: number) {
   return rsd.toLocaleString('sr-RS', {
@@ -42,6 +42,35 @@ export default function CheckoutModal() {
   const [customerEmail, setCustomerEmail] = useState(user.email || '')
   const [customerPhone, setCustomerPhone] = useState('')
 
+  // Phone number format validation - Serbian format: +381XXXXXXXXX or 06XXXXXXXXX
+  const formatPhoneNumber = (text: string) => {
+    // Remove all non-digit characters except +
+    let cleaned = text.replace(/[^\d+]/g, '')
+    
+    // If it starts with +, keep it, otherwise remove +
+    if (!cleaned.startsWith('+')) {
+      cleaned = cleaned.replace(/\+/g, '')
+    }
+    
+    // Limit length (max 13 digits with +, or 10 digits without)
+    if (cleaned.startsWith('+')) {
+      if (cleaned.length > 13) cleaned = cleaned.slice(0, 13)
+    } else {
+      if (cleaned.length > 10) cleaned = cleaned.slice(0, 10)
+    }
+    
+    return cleaned
+  }
+
+  const validatePhoneNumber = (phone: string): boolean => {
+    // Serbian phone number formats:
+    // +381XXXXXXXXX (international)
+    // 06XXXXXXXXX (domestic with leading 0)
+    // 6XXXXXXXXX (domestic without leading 0)
+    const phoneRegex = /^(\+381[6-9]\d{8}|0[6-9]\d{8}|[6-9]\d{8})$/
+    return phoneRegex.test(phone.replace(/\s/g, ''))
+  }
+
   // Delivery info
   const [deliveryAddress, setDeliveryAddress] = useState('')
   const [deliveryCity, setDeliveryCity] = useState('')
@@ -65,6 +94,10 @@ export default function CheckoutModal() {
     }
     if (!customerPhone.trim()) {
       Alert.alert('Error', 'Please enter your phone number')
+      return
+    }
+    if (!validatePhoneNumber(customerPhone.trim())) {
+      Alert.alert('Error', 'Please enter a valid Serbian phone number\nFormat: +381XXXXXXXXX or 06XXXXXXXXX')
       return
     }
     if (!deliveryAddress.trim()) {
@@ -121,7 +154,7 @@ export default function CheckoutModal() {
       })
 
       clear()
-      // Redirect to confirmation page
+      // Redirect to confirmation page, replacing current route
       router.replace(`/order-confirmation/${orderId}`)
     } catch (error: any) {
       console.error('Checkout error:', error)
@@ -175,11 +208,14 @@ export default function CheckoutModal() {
                   <Text className="text-sm font-semibold text-gray-700 mb-2">Phone Number *</Text>
                   <TextInput
                     value={customerPhone}
-                    onChangeText={setCustomerPhone}
-                    placeholder="Enter your phone number"
+                    onChangeText={(text) => setCustomerPhone(formatPhoneNumber(text))}
+                    placeholder="+381XXXXXXXXX or 06XXXXXXXXX"
                     className="bg-white border border-gray-300 rounded-xl px-4 py-3 text-base"
                     keyboardType="phone-pad"
                   />
+                  <Text className="text-xs text-gray-500 mt-1">
+                    Format: +381XXXXXXXXX or 06XXXXXXXXX
+                  </Text>
                 </View>
               </View>
             </View>

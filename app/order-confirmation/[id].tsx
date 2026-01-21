@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
-import { View, Text, Pressable, ScrollView, ActivityIndicator, Alert } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { router, useLocalSearchParams } from 'expo-router'
+import { useAuth } from '@/src/lib/auth-context'
 import { fetchOrderById, type Order } from '@/src/lib/orders'
+import { router, useLocalSearchParams } from 'expo-router'
+import { useEffect, useState } from 'react'
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 function formatRSD(rsd: number) {
   return rsd.toLocaleString('sr-RS', {
@@ -25,6 +26,7 @@ function formatDate(dateString: string) {
 
 export default function OrderConfirmationScreen() {
   const params = useLocalSearchParams<{ id: string }>()
+  const { user } = useAuth()
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -78,7 +80,7 @@ export default function OrderConfirmationScreen() {
             We couldn't find the order you're looking for.
           </Text>
           <Pressable
-            onPress={() => router.replace('/(tabs)/')}
+            onPress={() => router.push('/(tabs)/explore')}
             className="rounded-2xl bg-black px-8 py-4"
           >
             <Text className="text-white font-bold text-lg">Go to Home</Text>
@@ -115,17 +117,6 @@ export default function OrderConfirmationScreen() {
             <View className="mb-4">
               <Text className="text-sm font-semibold text-gray-500 mb-1">Order Date</Text>
               <Text className="text-base text-gray-900">{formatDate(order.created_at)}</Text>
-            </View>
-
-            <View className="mb-4">
-              <Text className="text-sm font-semibold text-gray-500 mb-1">Status</Text>
-              <View className="flex-row items-center mt-1">
-                <View className="bg-yellow-100 px-3 py-1 rounded-full">
-                  <Text className="text-yellow-800 font-semibold capitalize">
-                    {order.status}
-                  </Text>
-                </View>
-              </View>
             </View>
 
             <View>
@@ -205,24 +196,34 @@ export default function OrderConfirmationScreen() {
 
           {/* Action Buttons */}
           <View className="gap-4 mb-6">
-            <Pressable
-              onPress={() => router.replace('/(tabs)/orders')}
-              className="rounded-2xl bg-black py-4 active:opacity-90"
-            >
-              <Text className="text-center text-white font-bold text-lg">View All Orders</Text>
-            </Pressable>
+          <Pressable
+            onPress={() => {
+              if (user.role === 'admin') {
+                router.push('/(tabs)/orders')
+              } else {
+                router.push('/my-orders')
+              }
+            }}
+            className="rounded-2xl bg-black py-4 active:opacity-90"
+          >
+            <Text className="text-center text-white font-bold text-lg">View All Orders</Text>
+          </Pressable>
 
-            <Pressable
-              onPress={() => router.replace('/(tabs)/')}
-              className="rounded-2xl bg-gray-100 py-4 active:opacity-70 border border-gray-200"
-            >
-              <Text className="text-center text-gray-900 font-bold text-lg">Continue Shopping</Text>
-            </Pressable>
+          <Pressable
+            onPress={() => {
+              // Navigate to the explore tab (home page)
+              router.push('/(tabs)/explore')
+            }}
+            className="rounded-2xl bg-gray-100 py-4 active:opacity-70 border border-gray-200"
+          >
+            <Text className="text-center text-gray-900 font-bold text-lg">Continue Shopping</Text>
+          </Pressable>
           </View>
         </View>
       </ScrollView>
     </SafeAreaView>
   )
 }
+
 
 

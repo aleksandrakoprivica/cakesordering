@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react'
-import { View, Text, ActivityIndicator, Alert, Pressable } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { router, useLocalSearchParams } from 'expo-router'
-import * as WebBrowser from 'expo-web-browser'
 import { useAuth } from '@/src/lib/auth-context'
 import { useCart } from '@/src/lib/cart'
-import { createOrder, cartItemsToOrderItems } from '@/src/lib/orders'
+import { cartItemsToOrderItems, createOrder } from '@/src/lib/orders'
 import { createCheckoutSession, verifyPayment, type CheckoutData } from '@/src/lib/stripe'
+import { router, useLocalSearchParams } from 'expo-router'
+import * as WebBrowser from 'expo-web-browser'
+import { useEffect, useState } from 'react'
+import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 // Complete web browser authentication when done
 WebBrowser.maybeCompleteAuthSession()
@@ -94,7 +94,7 @@ export default function PaymentScreen() {
             })
 
             clear()
-            // Redirect to confirmation page
+            // Redirect to confirmation page, replacing current route
             router.replace(`/order-confirmation/${orderId}`)
           } else {
             setError('Payment verification failed in development mode')
@@ -147,7 +147,7 @@ export default function PaymentScreen() {
             })
 
             clear()
-            // Redirect to confirmation page
+            // Redirect to confirmation page, replacing current route
             router.replace(`/order-confirmation/${orderId}`)
           } else {
             Alert.alert(
