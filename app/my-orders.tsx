@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
-import { View, Text, FlatList, ActivityIndicator, RefreshControl, Pressable } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { router } from 'expo-router'
 import { useAuth } from '@/src/lib/auth-context'
 import { fetchOrdersByUserId, type Order } from '@/src/lib/orders'
+import { router } from 'expo-router'
+import { useEffect, useState } from 'react'
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 function formatRSD(rsd: number) {
   return rsd.toLocaleString('sr-RS', {
@@ -188,4 +188,5 @@ export default function MyOrdersScreen() {
     </SafeAreaView>
   )
 }
+
 

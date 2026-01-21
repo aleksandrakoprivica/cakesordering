@@ -2,13 +2,13 @@ import { useAuth } from "@/src/lib/auth-context";
 import { fetchAllOrders, updateOrderStatus, type Order } from "@/src/lib/orders";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    Pressable,
-    RefreshControl,
-    Text,
-    View,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  Text,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 

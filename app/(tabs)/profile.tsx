@@ -1,7 +1,7 @@
 // Profile page now only shows basic account info and auth actions.
 import { useAuth } from "@/src/lib/auth-context";
-import { useState } from "react";
 import { router } from "expo-router";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,

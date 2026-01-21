@@ -1,5 +1,5 @@
-import { supabase } from './supabase'
 import type { CartItem } from './cart'
+import { supabase } from './supabase'
 
 export type PaymentMethod = 'card' | 'cash'
 
