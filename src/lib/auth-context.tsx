@@ -11,7 +11,7 @@ type AuthContextValue =
       loading: false
       hasInitialized: boolean
       signIn: (email: string, password: string) => Promise<void>
-      signUp: (email: string, password: string) => Promise<void>
+      signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>
       signOutUser: () => Promise<void>
       setGuestMode: () => Promise<void>
     }
@@ -20,7 +20,7 @@ type AuthContextValue =
       loading: true
       hasInitialized: boolean
       signIn: (email: string, password: string) => Promise<void>
-      signUp: (email: string, password: string) => Promise<void>
+      signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>
       signOutUser: () => Promise<void>
       setGuestMode: () => Promise<void>
     }
@@ -106,8 +106,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Session listener will update user.
   }
 
-  const handleSignUp = async (email: string, password: string) => {
-    await signUpWithEmail(email, password)
+  const handleSignUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
+    const result = await signUpWithEmail(email, password)
+    // If user was created, save profile info including email
+    if (result.user) {
+      try {
+        const { upsertUserProfile } = await import('./auth')
+        await upsertUserProfile(result.user.id, {
+          first_name: firstName || null,
+          last_name: lastName || null,
+          email: email || null, // Store email in profiles table
+        })
+      } catch (error) {
+        console.warn('Failed to save user profile:', error)
+        // Don't throw - sign up was successful even if profile update fails
+      }
+    }
     // Depending on Supabase email confirmation settings, user may need to confirm email.
   }
 

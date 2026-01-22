@@ -217,10 +217,21 @@ export default function OrdersScreen() {
           text: 'Potvrdi',
           onPress: async () => {
             try {
+              console.log('Marking order as done:', orderId);
               await updateOrderStatus(orderId, 'done');
-              // Reload orders
+              console.log('Order status updated successfully');
+              
+              // Update local state immediately for better UX
+              setOrders((prevOrders) =>
+                prevOrders.map((order) =>
+                  order.id === orderId ? { ...order, status: 'done' as const } : order
+                )
+              );
+              
+              // Reload orders to ensure consistency
               await loadOrders();
             } catch (error: any) {
+              console.error('Error marking order as done:', error);
               Alert.alert('Greška', error.message || 'Neuspešno ažuriranje statusa porudžbine');
             }
           },

@@ -211,8 +211,9 @@ export default function OrderConfirmationScreen() {
 
           <Pressable
             onPress={() => {
-              // Navigate to the explore tab (home page)
-              router.push('/(tabs)/explore')
+              // Reset navigation completely and go to explore tab
+              router.dismissAll()
+              router.replace('/(tabs)/explore')
             }}
             className="rounded-2xl bg-gray-100 py-4 active:opacity-70 border border-gray-200"
           >

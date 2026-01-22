@@ -249,17 +249,33 @@ export async function fetchAllOrders(): Promise<Order[]> {
  */
 export async function updateOrderStatus(orderId: string, status: 'received' | 'done'): Promise<void> {
   try {
-    const { error } = await supabase
+    console.log('updateOrderStatus called:', { orderId, status })
+    
+    const { data, error } = await supabase
       .from('orders')
       .update({ status })
       .eq('id', orderId)
+      .select()
 
     if (error) {
       console.error('updateOrderStatus error:', error)
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      })
       throw new Error(error.message || 'Failed to update order status')
     }
+
+    console.log('updateOrderStatus success:', data)
+    
+    if (!data || data.length === 0) {
+      console.warn('updateOrderStatus: No rows updated. Order may not exist or RLS policy may be blocking.')
+      throw new Error('Porudžbina nije pronađena ili nemate dozvolu za ažuriranje.')
+    }
   } catch (error: any) {
-    console.error('updateOrderStatus error:', error)
+    console.error('updateOrderStatus catch error:', error)
     throw error
   }
 }

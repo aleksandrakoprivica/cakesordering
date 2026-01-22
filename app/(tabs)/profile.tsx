@@ -3,13 +3,13 @@ import { useAuth } from "@/src/lib/auth-context";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  SafeAreaView,
-  Text,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Alert,
+    Pressable,
+    SafeAreaView,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
 
 export default function ProfileScreen() {
@@ -17,6 +17,9 @@ export default function ProfileScreen() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const handleSignIn = async () => {
@@ -45,13 +48,21 @@ export default function ProfileScreen() {
       Alert.alert("Error", "Password should be at least 6 characters long.");
       return;
     }
+    if (!firstName.trim() || !lastName.trim()) {
+      Alert.alert("Error", "Please enter your first name and last name.");
+      return;
+    }
     setSubmitting(true);
     try {
-      await signUp(email.trim(), password);
+      await signUp(email.trim(), password, firstName.trim(), lastName.trim());
       Alert.alert(
         "Registracija uspešna",
         "Check your email for verification (depending on Supabase settings).",
       );
+      setFirstName("");
+      setLastName("");
+      setPassword("");
+      setIsSignUp(false);
     } catch (e: any) {
       Alert.alert("Sign up failed", e?.message ?? String(e));
     } finally {
@@ -132,6 +143,60 @@ export default function ProfileScreen() {
             </Text>
 
             <View style={{ gap: 12, marginBottom: 24 }}>
+              {isSignUp && (
+                <>
+                  <View>
+                    <Text
+                      style={{
+                        marginBottom: 4,
+                        color: "#374151",
+                        fontWeight: "500",
+                      }}
+                    >
+                      First Name
+                    </Text>
+                    <TextInput
+                      autoCapitalize="words"
+                      value={firstName}
+                      onChangeText={setFirstName}
+                      placeholder="Enter your first name"
+                      style={{
+                        borderRadius: 12,
+                        borderWidth: 1,
+                        borderColor: "#d1d5db",
+                        paddingHorizontal: 12,
+                        paddingVertical: 10,
+                        backgroundColor: "#ffffff",
+                      }}
+                    />
+                  </View>
+                  <View>
+                    <Text
+                      style={{
+                        marginBottom: 4,
+                        color: "#374151",
+                        fontWeight: "500",
+                      }}
+                    >
+                      Last Name
+                    </Text>
+                    <TextInput
+                      autoCapitalize="words"
+                      value={lastName}
+                      onChangeText={setLastName}
+                      placeholder="Enter your last name"
+                      style={{
+                        borderRadius: 12,
+                        borderWidth: 1,
+                        borderColor: "#d1d5db",
+                        paddingHorizontal: 12,
+                        paddingVertical: 10,
+                        backgroundColor: "#ffffff",
+                      }}
+                    />
+                  </View>
+                </>
+              )}
               <View>
                 <Text
                   style={{
@@ -187,37 +252,79 @@ export default function ProfileScreen() {
             </View>
 
             <View style={{ flexDirection: "row", gap: 12 }}>
-              <Pressable
-                disabled={submitting}
-                onPress={handleSignIn}
-                style={{
-                  flex: 1,
-                  borderRadius: 12,
-                  backgroundColor: "#000000",
-                  paddingVertical: 12,
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ color: "#ffffff", fontWeight: "700" }}>
-                  {submitting ? "Working…" : "Sign in"}
-                </Text>
-              </Pressable>
+              {!isSignUp ? (
+                <>
+                  <Pressable
+                    disabled={submitting}
+                    onPress={handleSignIn}
+                    style={{
+                      flex: 1,
+                      borderRadius: 12,
+                      backgroundColor: "#000000",
+                      paddingVertical: 12,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={{ color: "#ffffff", fontWeight: "700" }}>
+                      {submitting ? "Working…" : "Sign in"}
+                    </Text>
+                  </Pressable>
 
-              <Pressable
-                disabled={submitting}
-                onPress={handleSignUp}
-                style={{
-                  flex: 1,
-                  borderRadius: 12,
-                  backgroundColor: "#111827",
-                  paddingVertical: 12,
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ color: "#ffffff", fontWeight: "700" }}>
-                  {submitting ? "Working…" : "Sign up"}
-                </Text>
-              </Pressable>
+                  <Pressable
+                    disabled={submitting}
+                    onPress={() => setIsSignUp(true)}
+                    style={{
+                      flex: 1,
+                      borderRadius: 12,
+                      backgroundColor: "#111827",
+                      paddingVertical: 12,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={{ color: "#ffffff", fontWeight: "700" }}>
+                      Sign up
+                    </Text>
+                  </Pressable>
+                </>
+              ) : (
+                <>
+                  <Pressable
+                    disabled={submitting}
+                    onPress={() => {
+                      setIsSignUp(false);
+                      setFirstName("");
+                      setLastName("");
+                    }}
+                    style={{
+                      flex: 1,
+                      borderRadius: 12,
+                      backgroundColor: "#6b7280",
+                      paddingVertical: 12,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={{ color: "#ffffff", fontWeight: "700" }}>
+                      Back
+                    </Text>
+                  </Pressable>
+
+                  <Pressable
+                    disabled={submitting}
+                    onPress={handleSignUp}
+                    style={{
+                      flex: 1,
+                      borderRadius: 12,
+                      backgroundColor: "#111827",
+                      paddingVertical: 12,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={{ color: "#ffffff", fontWeight: "700" }}>
+                      {submitting ? "Working…" : "Create Account"}
+                    </Text>
+                  </Pressable>
+                </>
+              )}
             </View>
           </>
         ) : (

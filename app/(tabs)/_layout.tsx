@@ -106,6 +106,16 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="users"
+        options={{
+          title: "Korisnici",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="person.2.fill" color={color} />
+          ),
+          href: isAdmin ? undefined : null,
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Profil",

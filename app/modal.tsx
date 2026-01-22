@@ -119,7 +119,8 @@ export default function CheckoutModal() {
 
     // If card payment, redirect to Stripe payment page
     if (paymentMethod === 'card') {
-      router.push({
+      // Replace modal with payment screen to close modal
+      router.replace({
         pathname: '/payment',
         params: {
           customerName: customerName.trim(),

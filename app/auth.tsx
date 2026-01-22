@@ -67,6 +67,7 @@ export default function AuthScreen() {
           await upsertUserProfile(userId, {
             first_name: firstName.trim() || null,
             last_name: lastName.trim() || null,
+            email: email.trim() || null, // Store email in profiles
           });
         }
         if (isFromCheckout) {
