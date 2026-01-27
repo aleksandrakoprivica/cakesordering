@@ -116,18 +116,19 @@ export default function ProfileScreen() {
       <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 24 }}>
         <Text
           style={{
-            fontSize: 32,
+            fontSize: 36,
             fontWeight: "800",
             color: "#111827",
-            marginBottom: 4,
+            marginBottom: 8,
           }}
         >
-          Profile
+          Profil
         </Text>
-        <Text style={{ color: "#6b7280", marginBottom: 24 }}>
-          Role: <Text style={{ fontWeight: "700" }}>{user.role}</Text>
-          {user.email ? `  (${user.email})` : null}
-        </Text>
+        {isGuest && (
+          <Text style={{ color: "#6b7280", marginBottom: 24, fontSize: 15 }}>
+            Prijavite se da biste pristupili svom profilu
+          </Text>
+        )}
 
         {isGuest ? (
           <>
@@ -329,76 +330,156 @@ export default function ProfileScreen() {
           </>
         ) : (
           <>
-            <View style={{ paddingVertical: 16, marginBottom: 16 }}>
-              <Text style={{ color: "#374151", marginBottom: 8 }}>
-                You are signed in as:
-              </Text>
-              <Text style={{ fontWeight: "700", color: "#111827" }}>
-                {user.email ?? "Unknown email"}
-              </Text>
-              <Text style={{ color: "#6b7280", marginTop: 4 }}>
-                Role: <Text style={{ fontWeight: "700" }}>{user.role}</Text>
-              </Text>
-            </View>
-
-            {user.role !== "admin" && (
-              <Pressable
-                onPress={() => router.push("/my-orders")}
+            {/* User Info Card */}
+            <View
+              style={{
+                backgroundColor: "#ffffff",
+                borderRadius: 20,
+                padding: 20,
+                marginBottom: 20,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 8,
+                elevation: 3,
+              }}
+            >
+              <View
                 style={{
-                  borderRadius: 12,
-                  backgroundColor: "#000000",
-                  paddingVertical: 12,
+                  width: 64,
+                  height: 64,
+                  borderRadius: 32,
+                  backgroundColor: user.role === "admin" ? "#fee2e2" : "#e0e7ff",
                   alignItems: "center",
+                  justifyContent: "center",
                   marginBottom: 16,
                 }}
               >
-                <Text style={{ color: "#ffffff", fontWeight: "700" }}>
-                  Moje Porudžbine
+                <Text style={{ fontSize: 28 }}>
+                  {user.role === "admin" ? "👑" : "👤"}
                 </Text>
-              </Pressable>
-            )}
-
-            {user.role === "admin" && (
+              </View>
+              
+              <Text
+                style={{
+                  fontSize: 24,
+                  fontWeight: "800",
+                  color: "#111827",
+                  marginBottom: 8,
+                }}
+              >
+                {user.email?.split("@")[0] ?? "Korisnik"}
+              </Text>
+              
               <View
                 style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginBottom: 4,
+                }}
+              >
+                <Text style={{ color: "#6b7280", fontSize: 14 }}>
+                  Email:{" "}
+                </Text>
+                <Text
+                  style={{
+                    color: "#111827",
+                    fontSize: 14,
+                    fontWeight: "600",
+                  }}
+                >
+                  {user.email ?? "N/A"}
+                </Text>
+              </View>
+              
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginTop: 8,
+                }}
+              >
+                <View
+                  style={{
+                    backgroundColor:
+                      user.role === "admin" ? "#fee2e2" : "#e0e7ff",
+                    paddingHorizontal: 12,
+                    paddingVertical: 4,
+                    borderRadius: 12,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: user.role === "admin" ? "#b91c1c" : "#4338ca",
+                      fontSize: 12,
+                      fontWeight: "700",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {user.role === "admin" ? "Admin" : "Korisnik"}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Actions */}
+            <View style={{ gap: 12 }}>
+              {user.role !== "admin" && (
+                <Pressable
+                  onPress={() => router.push("/my-orders")}
+                  style={{
+                    borderRadius: 16,
+                    backgroundColor: "#000000",
+                    paddingVertical: 16,
+                    alignItems: "center",
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 2,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "#ffffff",
+                      fontWeight: "700",
+                      fontSize: 16,
+                    }}
+                  >
+                    Moje Porudžbine
+                  </Text>
+                </Pressable>
+              )}
+
+              <Pressable
+                disabled={submitting}
+                onPress={handleSignOut}
+                style={{
                   borderRadius: 16,
-                  borderWidth: 1,
-                  borderColor: "#fee2e2",
-                  backgroundColor: "#fef2f2",
-                  padding: 16,
-                  marginBottom: 16,
+                  backgroundColor: "#ffffff",
+                  borderWidth: 2,
+                  borderColor: "#ef4444",
+                  paddingVertical: 16,
+                  alignItems: "center",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 2,
+                  opacity: submitting ? 0.6 : 1,
                 }}
               >
                 <Text
                   style={{
+                    color: "#ef4444",
                     fontWeight: "700",
-                    color: "#b91c1c",
-                    marginBottom: 4,
+                    fontSize: 16,
                   }}
                 >
-                  Admin area (placeholder)
+                  {submitting ? "Working…" : "Odjavi se"}
                 </Text>
-                <Text style={{ color: "#7f1d1d", fontSize: 13 }}>
-                  Here you will be able to manage cakes, categories, users and
-                  orders.
-                </Text>
-              </View>
-            )}
-
-            <Pressable
-              disabled={submitting}
-              onPress={handleSignOut}
-              style={{
-                borderRadius: 12,
-                backgroundColor: "#ef4444",
-                paddingVertical: 12,
-                alignItems: "center",
-              }}
-            >
-              <Text style={{ color: "#ffffff", fontWeight: "700" }}>
-                {submitting ? "Working…" : "Sign out"}
-              </Text>
-            </Pressable>
+              </Pressable>
+            </View>
           </>
         )}
       </View>

@@ -137,14 +137,20 @@ export default function AuthScreen() {
               setIsSignUp(false);
             }}
             style={{
-              paddingHorizontal: 12,
+              paddingHorizontal: 14,
               paddingVertical: 8,
-              borderRadius: 8,
-              backgroundColor: isAdminMode ? "#f3f4f6" : "transparent",
+              borderRadius: 20,
+              backgroundColor: isAdminMode ? "#fee2e2" : "#f3f4f6",
+              borderWidth: 1,
+              borderColor: isAdminMode ? "#fecaca" : "#e5e7eb",
             }}
           >
-            <Text style={{ color: "#6b7280", fontSize: 13, fontWeight: "600" }}>
-              {isAdminMode ? "Korisnik" : "Admin"}
+            <Text style={{ 
+              color: isAdminMode ? "#b91c1c" : "#6b7280", 
+              fontSize: 13, 
+              fontWeight: "700" 
+            }}>
+              {isAdminMode ? "👑 Admin" : "Admin"}
             </Text>
           </Pressable>
         </View>
@@ -157,33 +163,49 @@ export default function AuthScreen() {
             paddingVertical: 40,
           }}
         >
-          <View style={{ alignItems: "center", marginBottom: 48 }}>
-            <Text
+          {/* Header Section */}
+          <View style={{ alignItems: "center", marginBottom: 40 }}>
+            <View
               style={{
-                fontSize: 48,
-                fontWeight: "800",
-                color: "#111827",
-                marginBottom: 8,
+                width: 100,
+                height: 100,
+                borderRadius: 50,
+                backgroundColor: "#fff5f5",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 20,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 8,
+                elevation: 4,
               }}
             >
-              🎂
-            </Text>
+              <Text style={{ fontSize: 56 }}>🎂</Text>
+            </View>
             <Text
               style={{
                 fontSize: 32,
                 fontWeight: "800",
                 color: "#111827",
                 marginBottom: 8,
+                textAlign: "center",
+                width: "100%",
               }}
             >
               {isAdminMode ? "Admin Panel" : "Poslastičarnica Tortica"}
             </Text>
             <Text
-              style={{ fontSize: 16, color: "#6b7280", textAlign: "center" }}
+              style={{ 
+                fontSize: 16, 
+                color: "#6b7280", 
+                textAlign: "center",
+                paddingHorizontal: 20,
+              }}
             >
               {isAdminMode
-                ? "Prijava za admina. Koristite svoj admin email i lozinku."
-                : "Dobrodošli! Prijavite se ili nastavite kao gost."}
+                ? "Prijavite se sa admin nalogom"
+                : "Dobrodošli u našu poslastičarnicu"}
             </Text>
           </View>
 
@@ -191,30 +213,49 @@ export default function AuthScreen() {
             <View
               style={{
                 marginBottom: 24,
-                padding: 12,
-                borderRadius: 12,
+                padding: 16,
+                borderRadius: 16,
                 backgroundColor: "#fef3c7",
                 borderWidth: 1,
                 borderColor: "#facc15",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.05,
+                shadowRadius: 4,
+                elevation: 2,
               }}
             >
               <Text
-                style={{ color: "#92400e", fontSize: 14, fontWeight: "600" }}
+                style={{ color: "#92400e", fontSize: 14, fontWeight: "600", textAlign: "center" }}
               >
-                {redirectMessage}
+                ⚠️ {redirectMessage}
               </Text>
             </View>
           )}
 
-          {isSignUp && !isAdminMode && (
-            <>
-              <View style={{ marginBottom: 16 }}>
+          {/* Form Card */}
+          <View
+            style={{
+              backgroundColor: "#ffffff",
+              borderRadius: 24,
+              padding: 24,
+              marginBottom: 24,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 12,
+              elevation: 5,
+            }}
+          >
+            {isSignUp && !isAdminMode && (
+              <>
+                <View style={{ marginBottom: 20 }}>
                 <Text
                   style={{
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: "600",
                     color: "#374151",
-                    marginBottom: 8,
+                    marginBottom: 10,
                   }}
                 >
                   Ime
@@ -225,24 +266,24 @@ export default function AuthScreen() {
                   placeholder="Unesite ime"
                   autoCapitalize="words"
                   style={{
-                    backgroundColor: "#ffffff",
-                    borderRadius: 12,
+                    backgroundColor: "#f9fafb",
+                    borderRadius: 14,
                     paddingHorizontal: 16,
-                    paddingVertical: 12,
+                    paddingVertical: 14,
                     fontSize: 16,
-                    borderWidth: 1,
+                    borderWidth: 1.5,
                     borderColor: "#e5e7eb",
                   }}
                 />
               </View>
 
-              <View style={{ marginBottom: 24 }}>
+              <View style={{ marginBottom: 20 }}>
                 <Text
                   style={{
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: "600",
                     color: "#374151",
-                    marginBottom: 8,
+                    marginBottom: 10,
                   }}
                 >
                   Prezime
@@ -253,25 +294,26 @@ export default function AuthScreen() {
                   placeholder="Unesite prezime"
                   autoCapitalize="words"
                   style={{
-                    backgroundColor: "#ffffff",
-                    borderRadius: 12,
+                    backgroundColor: "#f9fafb",
+                    borderRadius: 14,
                     paddingHorizontal: 16,
-                    paddingVertical: 12,
+                    paddingVertical: 14,
                     fontSize: 16,
-                    borderWidth: 1,
+                    borderWidth: 1.5,
                     borderColor: "#e5e7eb",
                   }}
                 />
-              </View>
-            </>
-          )}
-          <View style={{ marginBottom: 24 }}>
+                </View>
+              </>
+            )}
+            
+            <View style={{ marginBottom: 20 }}>
             <Text
               style={{
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: "600",
                 color: "#374151",
-                marginBottom: 8,
+                marginBottom: 10,
               }}
             >
               Email
@@ -279,29 +321,29 @@ export default function AuthScreen() {
             <TextInput
               value={email}
               onChangeText={setEmail}
-              placeholder="Unesite email adresu"
+              placeholder="vas@email.com"
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
               style={{
-                backgroundColor: "#ffffff",
-                borderRadius: 12,
+                backgroundColor: "#f9fafb",
+                borderRadius: 14,
                 paddingHorizontal: 16,
-                paddingVertical: 12,
+                paddingVertical: 14,
                 fontSize: 16,
-                borderWidth: 1,
+                borderWidth: 1.5,
                 borderColor: "#e5e7eb",
               }}
             />
-          </View>
+            </View>
 
-          <View style={{ marginBottom: 24 }}>
+            <View style={{ marginBottom: 24 }}>
             <Text
               style={{
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: "600",
                 color: "#374151",
-                marginBottom: 8,
+                marginBottom: 10,
               }}
             >
               Lozinka
@@ -309,17 +351,17 @@ export default function AuthScreen() {
             <TextInput
               value={password}
               onChangeText={setPassword}
-              placeholder="Unesite lozinku"
+              placeholder="••••••••"
               secureTextEntry
               autoCapitalize="none"
               autoCorrect={false}
               style={{
-                backgroundColor: "#ffffff",
-                borderRadius: 12,
+                backgroundColor: "#f9fafb",
+                borderRadius: 14,
                 paddingHorizontal: 16,
-                paddingVertical: 12,
+                paddingVertical: 14,
                 fontSize: 16,
-                borderWidth: 1,
+                borderWidth: 1.5,
                 borderColor: "#e5e7eb",
               }}
             />
@@ -328,99 +370,128 @@ export default function AuthScreen() {
                 style={{
                   fontSize: 12,
                   color: "#6b7280",
-                  marginTop: 6,
+                  marginTop: 8,
+                  lineHeight: 16,
                 }}
               >
                 Lozinka mora imati najmanje 6 karaktera, jedno veliko slovo i jedan broj.
               </Text>
             )}
+            </View>
           </View>
 
-          <Pressable
-            onPress={handleSubmit}
-            disabled={submitting}
-            style={{
-              backgroundColor: "#000000",
-              borderRadius: 12,
-              paddingVertical: 16,
-              alignItems: "center",
-              marginBottom: 16,
-              opacity: submitting ? 0.6 : 1,
-            }}
-          >
-            {submitting ? (
-              <ActivityIndicator color="#ffffff" />
-            ) : (
-              <Text
-                style={{ color: "#ffffff", fontSize: 16, fontWeight: "700" }}
-              >
-                {isAdminMode
-                  ? "Admin Sign In"
-                  : isSignUp
-                    ? "Sign Up"
-                    : "Sign In"}
-              </Text>
-            )}
-          </Pressable>
-
-          {!isAdminMode && (
+          {/* Action Buttons */}
+          <View style={{ gap: 12 }}>
             <Pressable
-              onPress={() => setIsSignUp(!isSignUp)}
-              style={{ alignItems: "center", marginBottom: 24 }}
+              onPress={handleSubmit}
+              disabled={submitting}
+              style={{
+                backgroundColor: "#000000",
+                borderRadius: 16,
+                paddingVertical: 18,
+                alignItems: "center",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.2,
+                shadowRadius: 8,
+                elevation: 4,
+                opacity: submitting ? 0.6 : 1,
+              }}
             >
-              <Text style={{ color: "#6b7280", fontSize: 14 }}>
-                {isSignUp
-                  ? "Već imaš profil? Prijavi se."
-                  : "Nemaš profil? Registruj se."}
-              </Text>
-            </Pressable>
-          )}
-
-          {!isAdminMode && (
-            <>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginBottom: 16,
-                }}
-              >
-                <View
-                  style={{ flex: 1, height: 1, backgroundColor: "#e5e7eb" }}
-                />
+              {submitting ? (
+                <ActivityIndicator color="#ffffff" />
+              ) : (
                 <Text
-                  style={{
-                    marginHorizontal: 16,
-                    color: "#9ca3af",
-                    fontSize: 14,
-                  }}
+                  style={{ color: "#ffffff", fontSize: 17, fontWeight: "700" }}
                 >
-                  ili
+                  {isAdminMode
+                    ? "Prijavi se kao Admin"
+                    : isSignUp
+                      ? "Kreiraj nalog"
+                      : "Prijavi se"}
                 </Text>
-                <View
-                  style={{ flex: 1, height: 1, backgroundColor: "#e5e7eb" }}
-                />
-              </View>
+              )}
+            </Pressable>
 
+            {!isAdminMode && (
               <Pressable
-                onPress={handleContinueAsGuest}
-                style={{
-                  backgroundColor: "#f3f4f6",
-                  borderRadius: 12,
-                  paddingVertical: 16,
-                  alignItems: "center",
-                  borderWidth: 1,
-                  borderColor: "#e5e7eb",
+                onPress={() => setIsSignUp(!isSignUp)}
+                style={{ 
+                  alignItems: "center", 
+                  paddingVertical: 12,
                 }}
               >
-                <Text
-                  style={{ color: "#374151", fontSize: 16, fontWeight: "600" }}
-                >
-                  Nastavite kao gost
+                <Text style={{ 
+                  color: "#6b7280", 
+                  fontSize: 15,
+                  fontWeight: "500",
+                }}>
+                  {isSignUp
+                    ? "Već imaš profil? "
+                    : "Nemaš profil? "}
+                  <Text style={{ color: "#000000", fontWeight: "700" }}>
+                    {isSignUp ? "Prijavi se" : "Registruj se"}
+                  </Text>
                 </Text>
               </Pressable>
-            </>
-          )}
+            )}
+
+            {!isAdminMode && (
+              <>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginVertical: 8,
+                  }}
+                >
+                  <View
+                    style={{ flex: 1, height: 1, backgroundColor: "#e5e7eb" }}
+                  />
+                  <Text
+                    style={{
+                      marginHorizontal: 16,
+                      color: "#9ca3af",
+                      fontSize: 14,
+                      fontWeight: "500",
+                    }}
+                  >
+                    ili
+                  </Text>
+                  <View
+                    style={{ flex: 1, height: 1, backgroundColor: "#e5e7eb" }}
+                  />
+                </View>
+
+                <Pressable
+                  onPress={handleContinueAsGuest}
+                  style={{
+                    backgroundColor: "#ffffff",
+                    borderRadius: 16,
+                    paddingVertical: 16,
+                    alignItems: "center",
+                    borderWidth: 2,
+                    borderColor: "#e5e7eb",
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.05,
+                    shadowRadius: 4,
+                    elevation: 2,
+                  }}
+                >
+                  <Text
+                    style={{ 
+                      color: "#374151", 
+                      fontSize: 16, 
+                      fontWeight: "600" 
+                    }}
+                  >
+                    Nastavite kao gost
+                  </Text>
+                </Pressable>
+              </>
+            )}
+          </View>
         </View>
       </View>
     </SafeAreaView>

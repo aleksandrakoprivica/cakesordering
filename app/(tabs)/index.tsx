@@ -210,10 +210,10 @@ export default function HomeScreen() {
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <View className="flex-1 px-5 pt-6 pb-4">
-        <View className="flex-row items-center justify-between mb-2">
-          <Text className="text-4xl font-extrabold text-gray-900">{title}</Text>
+        <View className="items-center mb-2 relative">
+          <Text className="text-4xl font-extrabold text-gray-900 text-center">{title}</Text>
           {isAdmin && (
-            <View className="bg-red-100 px-3 py-1.5 rounded-full border border-red-300">
+            <View className="absolute top-0 right-0 bg-red-100 px-3 py-1.5 rounded-full border border-red-300">
               <Text className="text-red-700 font-bold text-xs">ADMIN</Text>
             </View>
           )}
