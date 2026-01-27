@@ -341,21 +341,22 @@ export default function ProfileScreen() {
               </Text>
             </View>
 
-            {/* My Orders Button */}
-            <Pressable
-              onPress={() => router.push("/my-orders")}
-              style={{
-                borderRadius: 12,
-                backgroundColor: "#000000",
-                paddingVertical: 12,
-                alignItems: "center",
-                marginBottom: 16,
-              }}
-            >
-              <Text style={{ color: "#ffffff", fontWeight: "700" }}>
-                Moje Porudžbine
-              </Text>
-            </Pressable>
+            {user.role !== "admin" && (
+              <Pressable
+                onPress={() => router.push("/my-orders")}
+                style={{
+                  borderRadius: 12,
+                  backgroundColor: "#000000",
+                  paddingVertical: 12,
+                  alignItems: "center",
+                  marginBottom: 16,
+                }}
+              >
+                <Text style={{ color: "#ffffff", fontWeight: "700" }}>
+                  Moje Porudžbine
+                </Text>
+              </Pressable>
+            )}
 
             {user.role === "admin" && (
               <View

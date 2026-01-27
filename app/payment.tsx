@@ -94,8 +94,8 @@ export default function PaymentScreen() {
             })
 
             clear()
-            // Close any modals and redirect to confirmation page
-            router.dismissAll()
+            // Redirect to confirmation page, replacing current route
+            // This will automatically close any modals if they're in the stack
             router.replace(`/order-confirmation/${orderId}`)
           } else {
             setError('Payment verification failed in development mode')
@@ -148,8 +148,8 @@ export default function PaymentScreen() {
             })
 
             clear()
-            // Close any modals and redirect to confirmation page
-            router.dismissAll()
+            // Redirect to confirmation page, replacing current route
+            // This will automatically close any modals if they're in the stack
             router.replace(`/order-confirmation/${orderId}`)
           } else {
             Alert.alert(

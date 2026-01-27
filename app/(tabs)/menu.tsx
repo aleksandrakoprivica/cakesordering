@@ -389,26 +389,6 @@ export default function MenuScreen() {
                           flexWrap: "wrap",
                         }}
                       >
-                        {cake.categories?.slug === "bento" && (
-                          <View
-                            style={{
-                              backgroundColor: "#fce7f3",
-                              paddingHorizontal: 8,
-                              paddingVertical: 4,
-                              borderRadius: 6,
-                            }}
-                          >
-                            <Text
-                              style={{
-                                color: "#be185d",
-                                fontSize: 12,
-                                fontWeight: "600",
-                              }}
-                            >
-                              Bento
-                            </Text>
-                          </View>
-                        )}
                         {!cake.is_available && (
                           <View
                             style={{

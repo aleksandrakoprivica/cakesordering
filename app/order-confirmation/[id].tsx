@@ -211,8 +211,8 @@ export default function OrderConfirmationScreen() {
 
           <Pressable
             onPress={() => {
-              // Reset navigation completely and go to explore tab
-              router.dismissAll()
+              // Navigate to explore tab, replacing current route
+              // This will automatically close any modals if they're in the stack
               router.replace('/(tabs)/explore')
             }}
             className="rounded-2xl bg-gray-100 py-4 active:opacity-70 border border-gray-200"
