@@ -105,14 +105,9 @@ export default function OrderConfirmationScreen() {
             </Text>
           </View>
 
-          {/* Order Details Card */}
+          {/* Order Details Card (without exposing internal order ID to customer) */}
           <View className="bg-white rounded-3xl border border-gray-200 p-6 mb-6 shadow-md">
             <Text className="text-xl font-bold text-gray-900 mb-4">Order Details</Text>
-            
-            <View className="mb-4">
-              <Text className="text-sm font-semibold text-gray-500 mb-1">Order ID</Text>
-              <Text className="text-base font-mono text-gray-900">{order.id}</Text>
-            </View>
 
             <View className="mb-4">
               <Text className="text-sm font-semibold text-gray-500 mb-1">Order Date</Text>

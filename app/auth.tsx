@@ -92,20 +92,27 @@ export default function AuthScreen() {
       setFirstName("");
       setLastName("");
     } catch (e: any) {
-      // Log full error details to console
+      // Log full error details to console (for debugging)
       console.error("Auth error:", e);
       console.error("Error message:", e?.message);
       console.error("Error code:", e?.code);
       console.error("Full error object:", JSON.stringify(e, null, 2));
 
-      // Show detailed error to user
-      const errorMessage =
-        e?.message ||
-        e?.error_description ||
-        JSON.stringify(e) ||
-        "Unknown error";
+      // Friendlier messages for common auth cases
+      let errorMessage: string;
+
+      if (e?.code === "invalid_credentials" || e?.status === 400) {
+        errorMessage = "Pogrešan email ili lozinka. Pokušaj ponovo.";
+      } else if (e?.message) {
+        errorMessage = e.message;
+      } else if (e?.error_description) {
+        errorMessage = e.error_description;
+      } else {
+        errorMessage = "Došlo je do greške pri prijavi. Pokušaj ponovo.";
+      }
+
       Alert.alert(
-        isSignUp ? "Sign up failed" : "Sign in failed",
+        isSignUp ? "Registracija neuspešna" : "Prijava neuspešna",
         errorMessage,
         [{ text: "OK" }],
       );
@@ -413,6 +420,7 @@ export default function AuthScreen() {
               )}
             </Pressable>
 
+            {/* Allow switching between sign in / sign up only for regular users */}
             {!isAdminMode && (
               <Pressable
                 onPress={() => setIsSignUp(!isSignUp)}
@@ -436,7 +444,8 @@ export default function AuthScreen() {
               </Pressable>
             )}
 
-            {!isAdminMode && (
+            {/* Show 'continue as guest' only if user did NOT come here from checkout */}
+            {!isAdminMode && params.from !== "checkout" && (
               <>
                 <View
                   style={{

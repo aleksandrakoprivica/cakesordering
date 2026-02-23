@@ -34,7 +34,7 @@ function OrderCard({ order }: { order: Order }) {
       <View className="flex-row items-start justify-between mb-4">
         <View className="flex-1">
           <Text className="text-lg font-bold text-gray-900 mb-1">
-            Porudžbina #{order.id.slice(0, 8)}
+            Porudžbina
           </Text>
           <Text className="text-sm text-gray-500">
             {formatDate(order.created_at)}
